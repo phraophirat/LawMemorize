@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:oklch(0.985 0.008 230);--sf:#fff;--ink:oklch(0.28 0.03 240);--mut:oklch(0.52 0.03 240);--gh:oklch(0.78 0.02 240);--ln:oklch(0.92 0.015 240);--ac:oklch(0.56 0.14 240);--acs:oklch(0.95 0.03 240);--onac:#fff;--er:oklch(0.6 0.18 15);--ers:oklch(0.95 0.035 15)}
+html[data-theme=dark]{--bg:oklch(0.2 0.02 290);--sf:oklch(0.25 0.025 290);--ink:oklch(0.95 0.01 290);--mut:oklch(0.74 0.02 290);--gh:oklch(0.48 0.02 290);--ln:oklch(0.33 0.02 290);--ac:oklch(0.78 0.12 285);--acs:oklch(0.33 0.05 285);--onac:oklch(0.2 0.02 290);--er:oklch(0.75 0.15 15);--ers:oklch(0.32 0.06 15)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:var(--ac)}a:hover{color:var(--ink)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:var(--bg);color:var(--ink)">
+<div style="max-width:680px;margin:0 auto;padding:0 20px 120px;box-sizing:border-box">
+
+<sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+<header style="display:flex;align-items:center;justify-content:space-between;padding:20px 0 4px;gap:12px">
+<div style="display:flex;align-items:baseline;gap:10px"><span style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:22px"><span style="width:38px;height:38px;border-radius:13px;background:var(--acs);display:flex;align-items:center;justify-content:center;transform:rotate(-6deg)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 17a3 3 0 0 1 3-3h10"></path></svg></span>ท่องตัวบท</span><span style="font-size:12px;color:var(--mut)">ท่องวันละนิด ✿</span></div>
+<button onClick="{{ toggleTheme }}" aria-label="สลับโหมดสว่าง/มืด" style="width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><span style="display:block;width:22px;height:22px;background:center/contain no-repeat url({{ themeIcon }})"></span></button>
+</header>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<section style="padding-top:20px;display:flex;flex-direction:column;gap:32px">
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+<div><div style="font-size:14px;color:var(--mut)">ถึงรอบทบทวนวันนี้</div><div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><span style="font:500 60px/1 'IBM Plex Mono',monospace;letter-spacing:-0.04em">{{ dueCount }}</span><span style="font-size:18px">มาตรา</span></div></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;background:#FFF1E6;border-radius:18px;padding:10px 14px"><svg width="24" height="24" viewBox="0 0 24 24" fill="#FF9A5C" stroke="#E0683A" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z"></path></svg><div style="font-weight:700;font-size:20px;line-height:1;color:#B84A17">{{ streak }}</div><div style="font-size:11px;color:#B84A17">วันติดกัน</div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px">
+<sc-for list="{{ last14 }}" as="d" hint-placeholder-count="14"><div style="height:8px;border-radius:3px;background:{{ d.bg }}"></div></sc-for>
+</div>
+<button onClick="{{ startDue }}" style="background:var(--ac);color:var(--onac);border:0;border-radius:14px;padding:0 16px;font-size:16px;font-weight:600;min-height:54px">{{ dueCta }}</button>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+<sc-for list="{{ catBtns }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onClick }}" style="min-height:84px;padding:10px 4px;border-radius:20px;font-size:13px;line-height:1.25;font-weight:{{ c.fw }};border:2px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 0 {{ c.bd }}"><span style="width:36px;height:36px;border-radius:12px;background:{{ c.tile }};display:flex;align-items:center;justify-content:center"><span style="display:block;background:center/contain no-repeat url({{ c.icon }});width:22px;height:22px"></span></span>{{ c.t }}</button></sc-for>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--sf);border:1px solid var(--ln);border-radius:14px">
+<sc-for list="{{ homeTabs }}" as="tb" hint-placeholder-count="2"><button onClick="{{ tb.onClick }}" style="min-height:44px;border:0;border-radius:10px;font-size:15px;font-weight:{{ tb.fw }};background:{{ tb.bg }};color:{{ tb.fg }}">{{ tb.t }}</button></sc-for>
+</div>
+<sc-if value="{{ tabSubj }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-if value="{{ catEmpty }}"><div style="font-size:14px;color:var(--mut);padding:8px 2px">ยังไม่มีวิชาในหมวดนี้</div></sc-if>
+<sc-for list="{{ homeSubj }}" as="r" hint-placeholder-count="3">
+<button onClick="{{ r.onClick }}" style="text-align:left;border:1.5px solid var(--ln);background:var(--sf);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)">
+<div style="display:flex;align-items:center;gap:12px;width:100%"><span style="width:46px;height:46px;flex:none;border-radius:15px;background:{{ r.tile }};display:flex;align-items:center;justify-content:center"><span style="display:block;background:center/contain no-repeat url({{ r.icon }});width:24px;height:24px"></span></span><span style="flex:1;font-size:17px;font-weight:600;line-height:1.4">{{ r.name }}</span><span style="width:32px;height:32px;flex:none;border-radius:50%;background:var(--acs);color:var(--ac);display:flex;align-items:center;justify-content:center">→</span></div>
+<div style="width:100%;display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--mut);white-space:nowrap">{{ r.meta }}</span><div style="flex:1;height:5px;background:var(--ln);border-radius:3px;overflow:hidden"><div style="height:100%;width:{{ r.pct }};background:var(--ac)"></div></div><span style="font:500 12px 'IBM Plex Mono',monospace;color:var(--mut)">{{ r.pct }}</span></div>
+</button>
+</sc-for>
+<button onClick="{{ goAdd }}" style="min-height:48px;border-radius:14px;font-size:14px;border:1px dashed var(--gh);background:transparent;color:var(--mut)">+ เพิ่มวิชา / มาตรา</button>
+</div>
+</sc-if>
+<sc-if value="{{ tabGame }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
+<sc-for list="{{ modes }}" as="m" hint-placeholder-count="8">
+<button onClick="{{ m.onClick }}" style="text-align:left;border:1.5px solid var(--ln);background:var(--sf);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:128px;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)">
+<span style="width:46px;height:46px;border-radius:15px;background:{{ m.tile }};display:flex;align-items:center;justify-content:center"><span style="display:block;background:center/contain no-repeat url({{ m.icon }});width:24px;height:24px"></span></span>
+<div style="font-size:17px;font-weight:600">{{ m.name }}</div>
+<div style="font-size:13px;color:var(--mut);line-height:1.5;text-wrap:pretty">{{ m.desc }}</div>
+</button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isFlow }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:26px;padding-bottom:110px">
+<button onClick="{{ goHome }}" aria-label="เลือกเกมอื่น" style="align-self:flex-start;width:46px;height:46px;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="width:56px;height:56px;border-radius:18px;background:{{ fl.tile }};display:flex;align-items:center;justify-content:center;margin-bottom:6px"><span style="display:block;background:center/contain no-repeat url({{ fl.icon }});width:30px;height:30px"></span></span><h1 style="margin:0;font-size:26px;font-weight:600;line-height:1.3">{{ fl.name }}</h1><span style="font-size:14px;color:var(--mut)">{{ fl.desc }}</span></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;color:var(--mut);display:flex;gap:8px;align-items:center"><span style="font:600 12px 'IBM Plex Mono',monospace;color:var(--ac)">1</span>เลือกวิชา</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ subjChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--mut);display:flex;gap:8px;align-items:center"><span style="font:600 12px 'IBM Plex Mono',monospace;color:var(--ac)">2</span>เลือกมาตราที่จะเน้น</div><sc-if value="{{ hsHas }}"><button onClick="{{ hsToggleAll }}" aria-label="{{ hsAllLabel }}" title="{{ hsAllLabel }}" style="width:44px;height:44px;border-radius:14px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><span style="display:block;width:22px;height:22px;background:center/contain no-repeat url({{ hsAllIcon }})"></span></button></sc-if></div>
+<sc-if value="{{ hsEmpty }}"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px dashed var(--ln);border-radius:14px;padding:14px 16px;font-size:14px;color:var(--mut)"><span>วิชานี้ยังไม่มีมาตรา</span><button onClick="{{ hsPick }}" style="min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--ac);background:var(--acs);color:var(--ac);font-size:14px">เลือกมาตรา</button></div></sc-if>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ homeSecs }}" as="c"><button onClick="{{ c.onClick }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border-radius:12px;font-size:14px;border:1.5px solid {{ c.bd }};background:{{ c.bg }};color:var(--ink);text-align:left"><span style="font:500 12px 'IBM Plex Mono',monospace;color:{{ c.nfg }}">{{ c.label }}</span><span>{{ c.title }}</span></button></sc-for>
+</div>
+</div>
+
+</section>
+<div style="position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding:12px 20px calc(12px + env(safe-area-inset-bottom))"><div style="max-width:640px;margin:0 auto"><button onClick="{{ fl.start }}" style="width:100%;min-height:54px;border-radius:14px;border:0;background:{{ fl.bg }};color:{{ fl.fg }};font-size:16px;font-weight:600">{{ fl.cta }}</button></div></div>
+</sc-if>
+
+<sc-if value="{{ isLib }}">
+<section style="padding-top:20px;display:flex;flex-direction:column;gap:26px;padding-bottom:20px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:28px;font-weight:600">วิชาและตัวบท</h1><span style="font-size:14px;color:var(--mut)">กดอันไหนก็ได้เพื่อเปิดดูและแก้ไข</span></div>
+<sc-if value="{{ ad.msg }}"><div style="font-size:14px;color:var(--ac);background:var(--acs);border-radius:14px;padding:12px 14px">{{ ad.msg }}</div></sc-if>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;flex:none;border-radius:11px;background:#FFE6D8;display:flex;align-items:center;justify-content:center"><span style="display:block;width:20px;height:20px;background:center/contain no-repeat url({{ ad.icSubj }})"></span></span><h2 style="margin:0;font-size:19px;font-weight:600">วิชาของฉัน</h2></div>
+<sc-for list="{{ libGroups }}" as="gp" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:13px;font-weight:600;color:var(--mut);padding-top:4px">{{ gp.name }}</span>
+<sc-if value="{{ gp.empty }}"><span style="font-size:13px;color:var(--gh);padding:2px 0 4px">ยังไม่มีวิชา</span></sc-if>
+<sc-for list="{{ gp.rows }}" as="r">
+<button onClick="{{ r.onClick }}" style="text-align:left;border:1.5px solid var(--ln);background:var(--sf);border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 0 var(--ln)" style-hover="border-color:var(--ac)">
+<span style="width:40px;height:40px;flex:none;border-radius:13px;background:{{ r.tile }};display:flex;align-items:center;justify-content:center"><span style="display:block;width:22px;height:22px;background:center/contain no-repeat url({{ r.icon }})"></span></span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">{{ r.name }}</span><span style="font-size:12px;color:var(--mut)">{{ r.meta }} · จำได้ {{ r.pct }}</span></span>
+<span style="font-size:13px;color:var(--ac);font-weight:600;white-space:nowrap">แก้ไข →</span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+<div style="border:1.5px dashed var(--gh);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:14px;font-weight:600">+ วิชาใหม่</span>
+<input value="{{ newName }}" onChange="{{ onNewName }}" onKeyDown="{{ onNewKey }}" placeholder="ชื่อวิชา เช่น กฎหมายอาญา 1" style="min-height:48px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:0 14px;font:inherit;font-size:16px;outline-color:var(--ac)">
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ ad.cats }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:38px;padding:0 12px;border-radius:999px;font-size:13px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div>
+<button onClick="{{ addSubject }}" style="min-height:48px;border-radius:14px;border:0;background:{{ ad.sBg }};color:{{ ad.sFg }};font-size:15px;font-weight:600">สร้างวิชา</button>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;flex:none;border-radius:11px;background:#DDEAFF;display:flex;align-items:center;justify-content:center"><span style="display:block;width:20px;height:20px;background:center/contain no-repeat url({{ ad.icProv }})"></span></span><div style="display:flex;flex-direction:column"><h2 style="margin:0;font-size:19px;font-weight:600">คลังตัวบท</h2><span style="font-size:12px;color:var(--mut)">เพิ่มตัวบทที่นี่ แล้วเข้าไปในวิชาเพื่อเลือกมาตรา</span></div></div>
+<sc-for list="{{ codeRows }}" as="c" hint-placeholder-count="4">
+<div style="border:1.5px solid var(--ln);background:var(--sf);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 0 var(--ln)">
+<button onClick="{{ c.open }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:transparent;border:0;padding:0;text-align:left;min-height:40px"><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">{{ c.name }}</span><span style="font-size:12px;color:var(--mut)">{{ c.code }} · {{ c.meta }}</span></span><span style="font-size:13px;color:var(--ac);font-weight:600;white-space:nowrap">ดู / แก้ไข →</span></button>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><button onClick="{{ c.one }}" style="min-height:42px;border-radius:12px;border:0;background:var(--acs);color:var(--ac);font-size:14px;font-weight:600">+ พิมพ์มาตรา</button><button onClick="{{ c.many }}" style="min-height:42px;border-radius:12px;border:1px solid var(--ln);background:var(--sf);color:var(--ink);font-size:14px">นำเข้าหลายมาตรา</button></div>
+</div>
+</sc-for>
+</div>
+<p style="font-size:12px;color:var(--mut);line-height:1.6;margin:0">ตัวบทในต้นแบบนี้ใช้เพื่อสาธิต ควรตรวจกับฉบับราชกิจจานุเบกษาก่อนใช้สอบ</p>
+</section>
+</sc-if>
+
+<sc-if value="{{ isSubj }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;justify-content:space-between;align-items:center"><button onClick="{{ sjBack }}" aria-label="กลับ" style="width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button><button onClick="{{ sj.del }}" aria-label="ลบวิชานี้" title="ลบวิชานี้" style="position:relative;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--er);background:var(--ers);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 16px 0 12px;box-shadow:0 3px 0 var(--ln);color:var(--er);font-size:14px;font-weight:600"><span style="position:relative;display:flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--er)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 17a3 3 0 0 1 3-3h10"></path></svg><span style="position:absolute;right:-6px;top:-6px;width:16px;height:16px;border-radius:50%;background:var(--er);border:2px solid var(--ers);display:flex;align-items:center;justify-content:center"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span></span>ลบวิชา</button></div>
+<div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-size:28px;font-weight:600;line-height:1.3">{{ sj.name }}</h1><span style="font-size:14px;color:var(--mut)">{{ sj.meta }}</span></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:13px;color:var(--mut)">ฝึกวิชานี้ · เลื่อนซ้ายขวาดูเกมทั้งหมด</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin:0 -20px;padding:2px 20px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+<sc-for list="{{ sj.modes }}" as="m"><button onClick="{{ m.onClick }}" style="flex:none;width:116px;min-height:104px;border:1.5px solid var(--ln);background:var(--sf);border-radius:18px;font-size:14px;font-weight:500;line-height:1.35;padding:12px 10px;opacity:{{ sj.op }};display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;text-align:left;box-shadow:0 2px 0 var(--ln);scroll-snap-align:start" style-hover="border-color:var(--ac)"><span style="width:38px;height:38px;flex:none;border-radius:12px;background:{{ m.tile }};display:flex;align-items:center;justify-content:center"><span style="display:block;background:center/contain no-repeat url({{ m.icon }});width:22px;height:22px"></span></span>{{ m.name }}</button></sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--mut)">มาตราในวิชานี้</span><div style="display:flex;gap:8px"><button onClick="{{ sj.toggleEdit }}" aria-label="{{ sj.editLabel }}" title="{{ sj.editLabel }}" style="width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid {{ sj.editBd }};background:{{ sj.editBg }};display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)"><span style="display:block;width:22px;height:22px;background:center/contain no-repeat url({{ sj.editIcon }})"></span></button><button onClick="{{ sj.pick }}" aria-label="เลือกมาตรา" title="เลือกมาตรา" style="width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ac);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></button></div></div>
+<sc-if value="{{ sj.empty }}"><div style="font-size:14px;color:var(--mut);padding:20px 0">ยังไม่ได้เลือกมาตรา กด “เลือกมาตรา” เพื่อเพิ่ม</div></sc-if>
+<div style="display:flex;gap:8px;margin-top:8px"><input value="{{ sj.q }}" onChange="{{ sj.onQ }}" onKeyDown="{{ sj.onQKey }}" placeholder="พิมพ์เลขมาตรา เช่น 20 หรือ 19-25, 193/3" style="flex:1;min-width:0;min-height:48px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:0 14px;font:inherit;font-size:15px;outline-color:var(--ac)"><button onClick="{{ sj.add }}" style="min-height:48px;padding:0 16px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-size:15px;font-weight:600;white-space:nowrap">+ เพิ่ม</button></div>
+<sc-if value="{{ sj.msg }}"><div style="font-size:13px;color:{{ sj.msgC }};padding-top:6px;line-height:1.5">{{ sj.msg }}</div></sc-if>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--ln);margin-top:8px">
+<sc-for list="{{ sj.rows }}" as="r">
+<div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--ln)">
+<button onClick="{{ r.onClick }}" style="flex:1;min-width:0;display:grid;grid-template-columns:84px minmax(0,1fr) auto;align-items:center;gap:12px;text-align:left;background:transparent;border:0;padding:14px 2px;min-height:64px">
+<span style="font:500 13px 'IBM Plex Mono',monospace;color:var(--mut)">{{ r.label }}</span>
+<span style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font-size:15px;font-weight:500">{{ r.title }}</span><span style="font-size:12px;color:{{ r.dueColor }}">{{ r.due }}</span></span>
+<span style="display:flex;gap:3px"><sc-for list="{{ r.dots }}" as="d"><span style="width:7px;height:7px;border-radius:50%;background:{{ d.bg }}"></span></sc-for></span>
+</button>
+<sc-if value="{{ sj.editing }}"><button onClick="{{ r.del }}" style="min-height:40px;padding:0 14px;flex:none;border-radius:999px;border:0;background:var(--ers);color:var(--er);font-size:14px;font-weight:600">ลบ</button></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isPick }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:18px;padding-bottom:40px">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--mut)">เลือกมาตราสำหรับ</span><h1 style="margin:0;font-size:24px;font-weight:600;line-height:1.3">{{ pk.name }}</h1></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ codes }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut)"><span>{{ pk.shown }}</span><button onClick="{{ pk.toggleAll }}" style="background:transparent;border:0;color:var(--ac);font-size:14px;min-height:40px;padding:0">{{ pk.allLabel }}</button></div>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--ln)">
+<sc-for list="{{ pk.rows }}" as="r">
+<button onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:24px 96px minmax(0,1fr);align-items:center;gap:14px;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--ln);padding:12px 2px;min-height:60px">
+<span style="width:22px;height:22px;border-radius:6px;border:1.5px solid {{ r.bd }};background:{{ r.bg }};color:var(--onac);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">{{ r.check }}</span>
+<span style="font:500 13px 'IBM Plex Mono',monospace;color:var(--mut)">{{ r.label }}</span>
+<span style="font-size:15px">{{ r.title }}</span>
+</button>
+</sc-for>
+</div>
+</section>
+<div style="position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding:12px 20px calc(12px + env(safe-area-inset-bottom))"><div style="max-width:640px;margin:0 auto"><button onClick="{{ pk.done }}" style="width:100%;min-height:54px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-size:16px;font-weight:600">บันทึก · {{ pk.count }} มาตรา</button></div></div>
+</sc-if>
+
+<sc-if value="{{ isAdd }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:20px;padding-bottom:40px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:28px;font-weight:600">เพิ่ม</h1><span style="font-size:14px;color:var(--mut)">สร้างวิชาใหม่ หรือเพิ่มตัวบทเข้าคลังกฎหมาย</span></div>
+<sc-if value="{{ ad.msg }}"><div style="font-size:14px;color:var(--ac);background:var(--acs);border-radius:14px;padding:12px 14px">{{ ad.msg }}</div></sc-if>
+
+<div style="border:1.5px solid var(--ln);background:var(--sf);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 3px 0 var(--ln)">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:42px;height:42px;flex:none;border-radius:14px;background:#FFE6D8;display:flex;align-items:center;justify-content:center"><span style="display:block;width:22px;height:22px;background:center/contain no-repeat url({{ ad.icSubj }})"></span></span><div style="display:flex;flex-direction:column"><span style="font-size:17px;font-weight:600">วิชาใหม่</span><span style="font-size:13px;color:var(--mut)">สร้างแล้วไปเลือกมาตราต่อได้เลย</span></div></div>
+<input value="{{ newName }}" onChange="{{ onNewName }}" onKeyDown="{{ onNewKey }}" placeholder="ชื่อวิชา เช่น กฎหมายอาญา 1" style="min-height:50px;border:1.5px solid var(--ln);background:var(--bg);color:var(--ink);border-radius:14px;padding:0 14px;font:inherit;font-size:16px;outline-color:var(--ac)">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;color:var(--mut)">หมวด</span><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ ad.cats }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div></div>
+<button onClick="{{ addSubject }}" style="min-height:50px;border-radius:14px;border:0;background:{{ ad.sBg }};color:{{ ad.sFg }};font-size:16px;font-weight:600">สร้างวิชา</button>
+</div>
+
+<div style="border:1.5px solid var(--ln);background:var(--sf);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 3px 0 var(--ln)">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:42px;height:42px;flex:none;border-radius:14px;background:#DDEAFF;display:flex;align-items:center;justify-content:center"><span style="display:block;width:22px;height:22px;background:center/contain no-repeat url({{ ad.icProv }})"></span></span><div style="display:flex;flex-direction:column"><span style="font-size:17px;font-weight:600">ตัวบทมาตรา</span><span style="font-size:13px;color:var(--mut)">เก็บเข้าคลังกฎหมาย ใส่ในวิชาด้วยก็ได้</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;color:var(--mut)">ประมวล</span><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ ad.codes }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;color:var(--mut)">ใส่ในวิชา</span><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ ad.subs }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+<button onClick="{{ ad.one }}" style="min-height:64px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-size:15px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px">พิมพ์ทีละมาตรา<span style="font-size:12px;font-weight:400;opacity:.85">กรอกเลข ชื่อ ตัวบท</span></button>
+<button onClick="{{ ad.many }}" style="min-height:64px;border-radius:14px;border:1.5px solid var(--ac);background:var(--acs);color:var(--ac);font-size:15px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px">นำเข้าหลายมาตรา<span style="font-size:12px;font-weight:400">ไฟล์ .txt / .json หรือวาง</span></button>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isCodeLib }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:18px">
+<button onClick="{{ goLib }}" aria-label="กลับ" style="align-self:flex-start;width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--mut)">คลังมาตรา · {{ cl.code }}</span><h1 style="margin:0;font-size:26px;font-weight:600">{{ cl.name }}</h1><span style="font-size:14px;color:var(--mut)">{{ cl.meta }}</span></div>
+<button onClick="{{ cl.add }}" style="align-self:flex-start;min-height:46px;padding:0 16px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-size:15px;font-weight:600">+ เพิ่มมาตราเข้าคลังนี้</button>
+<div style="font-size:13px;color:var(--mut);line-height:1.6">กดที่มาตราเพื่ออ่าน หรือกด “แก้ไข” เพื่อแก้ตัวบท</div>
+<sc-if value="{{ cl.empty }}"><div style="font-size:14px;color:var(--mut);padding:12px 0">ยังไม่มีมาตราในคลังนี้</div></sc-if>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--ln)">
+<sc-for list="{{ cl.rows }}" as="r">
+<div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--ln)">
+<button onClick="{{ r.onClick }}" style="flex:1;min-width:0;display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:12px;text-align:left;background:transparent;border:0;padding:14px 2px;min-height:58px"><span style="font:500 13px 'IBM Plex Mono',monospace;color:var(--mut)">{{ r.label }}</span><span style="font-size:15px">{{ r.title }}</span></button>
+<button onClick="{{ r.edit }}" style="min-height:38px;padding:0 12px;flex:none;border-radius:999px;border:1px solid var(--ln);background:var(--sf);color:var(--ac);font-size:13px">แก้ไข</button>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isEdit }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:18px;padding-bottom:120px">
+<button onClick="{{ ed.back }}" aria-label="กลับ" style="align-self:flex-start;width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button>
+<h1 style="margin:0;font-size:24px;font-weight:600">{{ ed.head }}</h1>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;color:var(--mut)">ประมวล</span><div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ ed.codes }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div></div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--mut)">เลขมาตรา</span><input value="{{ ed.no }}" onChange="{{ ed.onNo }}" placeholder="เช่น 20 หรือ 193/3" style="min-height:50px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:0 14px;font:inherit;font-size:16px;outline-color:var(--ac)"></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--mut)">ชื่อเรื่อง</span><input value="{{ ed.title }}" onChange="{{ ed.onTitle }}" placeholder="เช่น บรรลุนิติภาวะโดยการสมรส" style="min-height:50px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:0 14px;font:inherit;font-size:16px;outline-color:var(--ac)"></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--mut)">ตัวบท · ขึ้นบรรทัดใหม่ = วรรคใหม่</span><textarea value="{{ ed.text }}" onChange="{{ ed.onText }}" rows="10" placeholder="วางตัวบทที่นี่" style="width:100%;box-sizing:border-box;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:12px 14px;font:inherit;font-size:16px;line-height:1.8;outline-color:var(--ac);resize:vertical"></textarea></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--mut)">คำสำคัญสำหรับเกมเติมคำ · ไม่ใส่ก็ได้ ระบบเลือกให้</span><input value="{{ ed.keys }}" onChange="{{ ed.onKeys }}" placeholder="คั่นด้วยเครื่องหมาย ," style="min-height:50px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:0 14px;font:inherit;font-size:16px;outline-color:var(--ac)"></label>
+<sc-if value="{{ ed.err }}"><div style="font-size:14px;color:var(--er)">{{ ed.err }}</div></sc-if>
+<sc-if value="{{ ed.canDel }}"><button onClick="{{ ed.del }}" style="align-self:flex-start;min-height:44px;padding:0 16px;border-radius:999px;border:0;background:var(--ers);color:var(--er);font-size:14px;font-weight:600">{{ ed.delLabel }}</button></sc-if>
+</section>
+<div style="position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding:12px 20px calc(12px + env(safe-area-inset-bottom))"><div style="max-width:640px;margin:0 auto"><button onClick="{{ ed.save }}" style="width:100%;min-height:54px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-size:16px;font-weight:600">บันทึกมาตรา</button></div></div>
+</sc-if>
+
+<sc-if value="{{ isImp }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:18px;padding-bottom:120px">
+<button onClick="{{ im.back }}" aria-label="กลับ" style="align-self:flex-start;width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--mut)">นำเข้ามาตราเข้าวิชา</span><h1 style="margin:0;font-size:24px;font-weight:600;line-height:1.3">{{ im.target }}</h1></div>
+<div style="font-size:14px;color:var(--mut);line-height:1.7;text-wrap:pretty">เลือกไฟล์ .txt หรือ .json หรือวางตัวบทหลายมาตราต่อกันได้เลย ให้แต่ละมาตราขึ้นบรรทัดใหม่ด้วยคำว่า “มาตรา” ตามด้วยเลข แต่ละบรรทัดในมาตราจะกลายเป็นวรรค</div>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><label style="min-height:46px;padding:0 18px;border-radius:14px;border:1.5px solid var(--ac);background:var(--acs);color:var(--ac);font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer">เลือกไฟล์<input type="file" accept=".txt,.json,text/plain,application/json" onChange="{{ im.onFile }}" style="display:none"></label><span style="font-size:13px;color:var(--mut)">{{ im.fname }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ im.codes }}" as="c"><button onClick="{{ c.onClick }}" style="min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }}">{{ c.t }}</button></sc-for></div>
+<textarea value="{{ im.raw }}" onChange="{{ im.onRaw }}" rows="9" placeholder="มาตรา 19 บุคคลย่อมพ้นจากภาวะผู้เยาว์...&#10;มาตรา 20 ผู้เยาว์ย่อมบรรลุนิติภาวะ..." style="width:100%;box-sizing:border-box;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;line-height:1.8;outline-color:var(--ac);resize:vertical"></textarea>
+<sc-if value="{{ im.summary }}"><div style="font-size:14px;font-weight:600">{{ im.summary }}</div></sc-if>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--ln)">
+<sc-for list="{{ im.rows }}" as="r"><div style="display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--ln);font-size:14px"><span style="font:500 13px 'IBM Plex Mono',monospace;color:var(--mut)">{{ r.label }}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.title }}</span><span style="font-size:12px;color:{{ r.flagC }}">{{ r.flag }}</span></div></sc-for>
+</div>
+</section>
+<div style="position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding:12px 20px calc(12px + env(safe-area-inset-bottom))"><div style="max-width:640px;margin:0 auto"><button onClick="{{ im.go }}" style="width:100%;min-height:54px;border-radius:14px;border:0;background:{{ im.bg }};color:{{ im.fg }};font-size:16px;font-weight:600">{{ im.cta }}</button></div></div>
+</sc-if>
+
+<sc-if value="{{ isSec }}">
+<section style="padding-top:16px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;justify-content:space-between;align-items:center"><button onClick="{{ secBack }}" aria-label="กลับ" style="width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button><button onClick="{{ secEdit }}" style="min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--ac);background:var(--acs);color:var(--ac);font-size:14px;font-weight:500">แก้ไขตัวบท</button></div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ sec.code }} มาตรา {{ sec.no }}</div>
+<h1 style="margin:0;font-size:26px;font-weight:600;line-height:1.35;text-wrap:pretty">{{ sec.title }}</h1>
+</div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:18px;padding:22px;font-size:19px;line-height:2;text-wrap:pretty;display:flex;flex-direction:column;gap:8px"><sc-for list="{{ sec.units }}" as="u"><div style="padding-left:{{ u.pad }}"><sc-if value="{{ u.tag }}"><span style="display:inline-block;font-size:12px;font-weight:600;color:var(--ac);background:var(--acs);border-radius:999px;padding:0 10px;margin-right:8px;line-height:24px;vertical-align:middle">{{ u.tag }}</span></sc-if>{{ u.t }}</div></sc-for></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--mut)">ระดับความจำ</span><span style="display:flex;gap:4px"><sc-for list="{{ secDots }}" as="d"><span style="width:9px;height:9px;border-radius:50%;background:{{ d.bg }}"></span></sc-for></span></div>
+<span style="color:var(--mut)">{{ secDue }}</span>
+</div>
+<div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center">
+<button onClick="{{ secNav.prev }}" aria-label="มาตราก่อนหน้า" style="width:52px;height:52px;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln);opacity:{{ secNav.pOp }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"></path></svg></button>
+<button onClick="{{ secNav.next }}" style="min-height:52px;border-radius:16px;border:0;background:{{ secNav.nBg }};color:{{ secNav.nFg }};font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 0 var(--ln)">{{ secNav.label }}<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"></path></svg></button>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:13px;color:var(--mut)">ฝึกมาตรานี้</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+<sc-for list="{{ secModes }}" as="m"><button onClick="{{ m.onClick }}" style="min-height:52px;border:1px solid var(--ln);background:var(--sf);border-radius:12px;font-size:14px;font-weight:500;padding:0 12px" style-hover="border-color:var(--ac)">{{ m.name }}</button></sc-for>
+</div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isStats }}">
+<section style="padding-top:20px;display:flex;flex-direction:column;gap:16px">
+<h1 style="margin:0 0 4px;font-size:28px;font-weight:600">สถิติ</h1>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{ kpis }}" as="k"><div style="background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px"><span style="font:500 26px/1 'IBM Plex Mono',monospace">{{ k.v }}</span><span style="font-size:12px;color:var(--mut)">{{ k.k }}</span></div></sc-for>
+</div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;font-size:14px"><span style="font-weight:600">ระดับความจำ</span><span style="color:var(--mut)">{{ totalSecs }} มาตรา</span></div>
+<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px">
+<sc-for list="{{ dist }}" as="d"><div style="flex:{{ d.n }};background:{{ d.bg }}"></div></sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:var(--mut)">
+<sc-for list="{{ dist }}" as="d"><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:{{ d.bg }}"></span>{{ d.label }} · {{ d.n }}</span></sc-for>
+</div>
+</div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:600">รายวิชา</div>
+<sc-for list="{{ byCode }}" as="b">
+<div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 44px;align-items:center;gap:12px;font-size:13px">
+<span>{{ b.t }}</span><div style="height:6px;background:var(--ln);border-radius:3px;overflow:hidden"><div style="height:100%;width:{{ b.pct }};background:var(--ac)"></div></div><span style="font-family:'IBM Plex Mono',monospace;text-align:right;color:var(--mut)">{{ b.pct }}</span>
+</div>
+</sc-for>
+</div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px"><span style="font-weight:600">มาตราที่ดูล่าสุด</span><span style="color:var(--mut)">ฝึกแล้ว</span></div>
+<sc-if value="{{ seenEmpty }}"><div style="font-size:13px;color:var(--mut);padding:8px 0">ยังไม่ได้เปิดดูมาตราใด</div></sc-if>
+<sc-for list="{{ seen }}" as="p">
+<button onClick="{{ p.onClick }}" style="display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border:0;border-bottom:1px solid var(--ln);background:transparent;text-align:left;font-size:14px;min-height:48px">
+<span style="font:500 13px 'IBM Plex Mono',monospace;color:var(--mut)">{{ p.label }}</span><span>{{ p.title }}</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--mut)">{{ p.n }} ครั้ง</span>
+</button>
+</sc-for>
+</div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:14px;font-weight:600">การพิมพ์ล่าสุด</div>
+<sc-for list="{{ recent }}" as="h">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 64px 56px;gap:10px;font-size:13px;align-items:center"><span style="color:var(--mut)">{{ h.when }} · {{ h.mode }}</span><span style="font-family:'IBM Plex Mono',monospace;text-align:right">{{ h.wpm }} wpm</span><span style="font-family:'IBM Plex Mono',monospace;text-align:right;color:var(--mut)">{{ h.acc }}</span></div>
+</sc-for>
+</div>
+<button onClick="{{ resetAll }}" aria-label="รีเซ็ตความคืบหน้า" title="รีเซ็ตความคืบหน้า" style="align-self:flex-start;height:46px;border-radius:16px;border:1.5px solid var(--er);background:var(--ers);color:var(--er);display:flex;align-items:center;gap:8px;padding:0 16px 0 12px;font-size:14px;font-weight:600;box-shadow:0 3px 0 var(--ln)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--er)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.5-5.8"></path><path d="M4 4v4.5h4.5"></path></svg>รีเซ็ตความคืบหน้า</button>
+</section>
+</sc-if>
+
+<sc-if value="{{ isGame }}">
+<section style="padding-top:14px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<button onClick="{{ quitGame }}" aria-label="ออกจากเกม" style="width:46px;height:46px;flex:none;border-radius:16px;border:1.5px solid var(--ln);background:var(--acs);display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 0 var(--ln)" style-hover="border-color:var(--ac)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2.4" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"></path></svg></button>
+<div style="text-align:center;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ modeName }}</span><span style="font:500 12px 'IBM Plex Mono',monospace;color:var(--mut)">{{ gameSub }}</span></div>
+<span style="width:44px;text-align:right;font:500 13px 'IBM Plex Mono',monospace;color:var(--mut)">{{ gameRight }}</span>
+</div>
+
+<sc-if value="{{ isTyping }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ ty.label }}</span><span style="font-size:15px;color:var(--mut)">{{ ty.title }}</span></div>
+<sc-if value="{{ liveStats }}"><div style="display:flex;gap:22px;font:500 15px 'IBM Plex Mono',monospace;color:var(--ac)"><span>{{ ty.wpm }} wpm</span><span>{{ ty.acc }}</span><span style="color:var(--mut)">{{ ty.pct }}</span></div></sc-if>
+<div style="position:relative;min-height:180px">
+<div style="font-size:var(--tsz,24px);line-height:1.95;word-break:break-word;text-wrap:pretty;user-select:none"><span style="color:var(--ink)">{{ ty.correct }}</span><span style="color:{{ ty.midColor }};background:{{ ty.midBg }};border-radius:3px">{{ ty.mid }}</span>{{ caret }}<span style="color:var(--gh)">{{ ty.rest }}</span></div>
+<textarea ref="{{ taRef }}" value="{{ ty.typed }}" onChange="{{ onType }}" onKeyDown="{{ onTypeKey }}" onFocus="{{ onTF }}" onBlur="{{ onTB }}" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck="false" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;resize:none;border:0;padding:0;cursor:text"></textarea>
+<sc-if value="{{ ty.showTap }}"><div style="position:absolute;left:0;right:0;bottom:-6px;text-align:center;font-size:13px;color:var(--mut);pointer-events:none">แตะที่ข้อความแล้วเริ่มพิมพ์</div></sc-if>
+</div>
+<div style="height:3px;background:var(--ln);border-radius:2px;overflow:hidden"><div style="height:100%;width:{{ ty.pct }};background:var(--ac);transition:width .15s"></div></div>
+<sc-if value="{{ ty.isRecall }}">
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button onClick="{{ hint }}" style="min-height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--ln);background:var(--sf);font-size:14px">ใบ้คำถัดไป</button>
+<button onClick="{{ peek }}" style="min-height:46px;padding:0 18px;border-radius:12px;border:1px solid var(--ln);background:var(--sf);font-size:14px">{{ peekLabel }}</button>
+</div>
+<sc-if value="{{ peeking }}"><div style="font-size:15px;line-height:1.9;color:var(--mut);background:var(--sf);border:1px dashed var(--ln);border-radius:14px;padding:16px">{{ ty.full }}</div></sc-if>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRecallW }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ rc.label }}</span><span style="font-size:15px;color:var(--mut)">{{ rc.title }}</span></div>
+<sc-if value="{{ rc.editing }}">
+<textarea value="{{ rc.ans }}" onChange="{{ rc.onAns }}" rows="9" placeholder="พิมพ์ตัวบทมาตรานี้จากความจำ พิมพ์เสร็จแล้วกดส่ง" autoCapitalize="off" autoCorrect="off" autoComplete="off" spellCheck="false" style="width:100%;box-sizing:border-box;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:18px;padding:16px;font:inherit;font-size:var(--tsz,20px);line-height:1.9;outline-color:var(--ac);resize:vertical"></textarea>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button onClick="{{ rc.submit }}" style="flex:1;min-width:160px;min-height:52px;border-radius:14px;border:0;background:{{ rc.subBg }};color:{{ rc.subFg }};font-size:16px;font-weight:600">ส่งคำตอบ</button>
+<button onClick="{{ rc.peek }}" style="min-height:52px;padding:0 18px;border-radius:14px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);font-size:14px">{{ rc.peekLabel }}</button>
+</div>
+<sc-if value="{{ rc.peeking }}"><div style="font-size:15px;line-height:1.9;color:var(--mut);background:var(--sf);border:1px dashed var(--ln);border-radius:14px;padding:16px">{{ rc.full }}</div></sc-if>
+</sc-if>
+<sc-if value="{{ rc.sub }}">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap"><span style="font-size:15px;font-weight:600">คำตอบของคุณ</span><span style="font:600 18px 'IBM Plex Mono',monospace;color:{{ rc.scoreC }}">ตรง {{ rc.acc }}</span></div>
+<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut)"><span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:4px;background:var(--ers);border:1px solid var(--er)"></span>พิมพ์ผิด / เกิน</span><span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:4px;border:1.5px dashed var(--gh)"></span>ตกหล่น</span></div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:18px;padding:18px;font-size:18px;line-height:2;word-break:break-word;white-space:pre-wrap"><sc-for list="{{ rc.segs }}" as="sg"><span style="color:{{ sg.c }};background:{{ sg.bg }};text-decoration:{{ sg.td }};border-radius:3px">{{ sg.t }}</span></sc-for></div>
+<div style="font-size:15px;font-weight:600;padding-top:4px">เฉลย</div>
+<div style="background:var(--acs);border-radius:18px;padding:18px;font-size:18px;line-height:2;text-wrap:pretty;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ rc.units }}" as="u"><div style="padding-left:{{ u.pad }}"><sc-if value="{{ u.tag }}"><span style="display:inline-block;font-size:12px;font-weight:600;color:var(--ac);background:var(--sf);border-radius:999px;padding:0 10px;margin-right:8px;line-height:24px;vertical-align:middle">{{ u.tag }}</span></sc-if>{{ u.t }}</div></sc-for></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button onClick="{{ rc.retry }}" style="min-height:52px;padding:0 18px;border-radius:14px;border:1.5px solid var(--ln);background:var(--sf);color:var(--ink);font-size:15px">แก้แล้วส่งใหม่</button>
+<button onClick="{{ rc.done }}" style="flex:1;min-width:160px;min-height:52px;border-radius:14px;border:0;background:var(--ac);color:var(--onac);font-size:16px;font-weight:600">บันทึกผล</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCloze }}">
+<div style="display:flex;flex-direction:column;gap:22px">
+<div style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ cz.label }} <span style="font-family:'IBM Plex Sans Thai';color:var(--mut)">{{ cz.title }}</span></div>
+<p style="font-size:19px;line-height:2.3;margin:0;text-wrap:pretty"><sc-for list="{{ cz.segs }}" as="s"><sc-if value="{{ s.isText }}"><span>{{ s.t }}</span></sc-if><sc-if value="{{ s.isBlank }}"><button onClick="{{ s.onClick }}" style="display:inline-flex;align-items:center;justify-content:center;min-width:{{ s.w }};min-height:38px;padding:0 10px;margin:0 3px;border-radius:8px;border:1.5px {{ s.bs }} {{ s.bc }};background:{{ s.bg }};color:{{ s.fg }};font-size:17px;vertical-align:middle;line-height:1.3">{{ s.label }}</button></sc-if></sc-for></p>
+<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:6px;border-top:1px solid var(--ln)">
+<sc-for list="{{ cz.bank }}" as="b"><button onClick="{{ b.onClick }}" style="min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--ln);background:var(--sf);font-size:15px;opacity:{{ b.op }}" style-hover="border-color:var(--ac)">{{ b.w }}</button></sc-for>
+</div>
+<button onClick="{{ cz.action }}" style="min-height:54px;border-radius:14px;border:0;font-size:16px;font-weight:600;background:{{ cz.btnBg }};color:{{ cz.btnFg }}">{{ cz.btn }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOrder }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ od.label }} <span style="font-family:'IBM Plex Sans Thai';color:var(--mut)">{{ od.title }}</span></div>
+<div style="min-height:160px;border:1.5px dashed var(--ln);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px">
+<sc-if value="{{ od.empty }}"><div style="color:var(--mut);font-size:14px;padding:8px">แตะท่อนด้านล่างตามลำดับตัวบท</div></sc-if>
+<sc-for list="{{ od.ans }}" as="a"><button onClick="{{ a.onClick }}" style="text-align:left;display:flex;gap:12px;align-items:baseline;min-height:46px;padding:10px 14px;border-radius:10px;border:1px solid {{ a.bd }};background:{{ a.bg }};font-size:16px;line-height:1.6"><span style="font:500 12px 'IBM Plex Mono',monospace;color:var(--mut)">{{ a.n }}</span><span style="display:flex;flex-direction:column;gap:2px"><sc-if value="{{ a.tag }}"><span style="font-size:11px;font-weight:600;color:var(--ac)">{{ a.tag }}</span></sc-if><span>{{ a.t }}</span></span></button></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ od.pool }}" as="p"><button onClick="{{ p.onClick }}" style="text-align:left;min-height:46px;padding:10px 14px;border-radius:10px;border:1px solid var(--ln);background:var(--sf);font-size:16px;line-height:1.6;display:flex;flex-direction:column;gap:2px" style-hover="border-color:var(--ac)"><sc-if value="{{ p.tag }}"><span style="font-size:11px;font-weight:600;color:var(--ac)">{{ p.tag }}</span></sc-if><span>{{ p.t }}</span></button></sc-for>
+</div>
+<button onClick="{{ od.action }}" style="min-height:54px;border-radius:14px;border:0;font-size:16px;font-weight:600;background:{{ od.btnBg }};color:{{ od.btnFg }}">{{ od.btn }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMatch }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-size:14px;color:var(--mut)">แตะเลขมาตรา แล้วแตะเรื่องที่ตรงกัน</div>
+<div style="display:grid;grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);gap:10px">
+<div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ mt.left }}" as="x"><button onClick="{{ x.onClick }}" style="min-height:68px;border-radius:12px;border:1.5px solid {{ x.bd }};background:{{ x.bg }};color:{{ x.fg }};opacity:{{ x.op }};font:500 15px 'IBM Plex Mono',monospace;transition:all .15s">{{ x.t }}</button></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ mt.right }}" as="x"><button onClick="{{ x.onClick }}" style="min-height:68px;text-align:left;padding:8px 12px;border-radius:12px;border:1.5px solid {{ x.bd }};background:{{ x.bg }};color:{{ x.fg }};opacity:{{ x.op }};font-size:14px;line-height:1.4;transition:all .15s">{{ x.t }}</button></sc-for></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSrs }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<button onClick="{{ flip }}" style="text-align:left;min-height:340px;border-radius:22px;border:1px solid var(--ln);background:var(--sf);padding:26px;display:flex;flex-direction:column;gap:16px;justify-content:flex-start">
+<span style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ sr.label }}</span>
+<span style="font-size:24px;font-weight:600;line-height:1.4">{{ sr.title }}</span>
+<sc-if value="{{ sr.flipped }}"><span style="font-size:18px;line-height:2;border-top:1px solid var(--ln);padding-top:16px;text-wrap:pretty;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ sr.units }}" as="u"><span style="display:block;padding-left:{{ u.pad }}"><sc-if value="{{ u.tag }}"><span style="display:inline-block;font-size:12px;font-weight:600;color:var(--ac);background:var(--acs);border-radius:999px;padding:0 10px;margin-right:8px;line-height:24px;vertical-align:middle">{{ u.tag }}</span></sc-if>{{ u.t }}</span></sc-for></span></sc-if>
+<sc-if value="{{ sr.front }}"><span style="margin-top:auto;font-size:14px;color:var(--mut)">นึกตัวบทในใจให้ครบ แล้วแตะเพื่อเฉลย</span></sc-if>
+</button>
+<sc-if value="{{ sr.flipped }}">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+<sc-for list="{{ sr.rates }}" as="r"><button onClick="{{ r.onClick }}" style="min-height:64px;border-radius:12px;border:1px solid var(--ln);background:{{ r.bg }};color:{{ r.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font-size:15px;font-weight:600">{{ r.t }}</span><span style="font:500 11px 'IBM Plex Mono',monospace;opacity:.75">{{ r.iv }}</span></button></sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGuess }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="font-size:14px;color:var(--mut)">ตัวบทนี้คือมาตราใด</div>
+<div style="background:var(--sf);border:1px solid var(--ln);border-radius:18px;padding:22px;font-size:18px;line-height:2;text-wrap:pretty;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ gs.units }}" as="u"><div style="padding-left:{{ u.pad }}"><sc-if value="{{ u.tag }}"><span style="display:inline-block;font-size:12px;font-weight:600;color:var(--ac);background:var(--acs);border-radius:999px;padding:0 10px;margin-right:8px;line-height:24px;vertical-align:middle">{{ u.tag }}</span></sc-if>{{ u.t }}</div></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+<sc-for list="{{ gs.opts }}" as="o"><button onClick="{{ o.onClick }}" style="min-height:58px;border-radius:12px;border:1.5px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font:500 16px 'IBM Plex Mono',monospace">{{ o.t }}</button></sc-for>
+</div>
+<sc-if value="{{ gs.picked }}"><div style="display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:var(--mut)">{{ gs.note }}</div><button onClick="{{ gs.next }}" style="min-height:54px;border-radius:14px;border:0;font-size:16px;font-weight:600;background:var(--ac);color:var(--onac)">{{ gs.nextLabel }}</button></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isElem }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="font:500 14px 'IBM Plex Mono',monospace;color:var(--ac)">{{ el.label }} <span style="font-family:'IBM Plex Sans Thai';color:var(--mut)">{{ el.title }}</span></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ el.slots }}" as="s"><button onClick="{{ s.onClick }}" style="text-align:left;display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;align-items:center;min-height:56px;padding:10px 14px;border-radius:12px;border:1.5px solid {{ s.bd }};background:{{ s.bg }}"><span style="font-size:12px;color:var(--mut)">{{ s.k }}</span><span style="font-size:15px;line-height:1.5;color:{{ s.fg }}">{{ s.v }}</span></button></sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid var(--ln)">
+<sc-for list="{{ el.chips }}" as="c"><button onClick="{{ c.onClick }}" style="text-align:left;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid var(--ln);background:var(--sf);font-size:14px;line-height:1.45;opacity:{{ c.op }}" style-hover="border-color:var(--ac)">{{ c.t }}</button></sc-for>
+</div>
+<button onClick="{{ el.action }}" style="min-height:54px;border-radius:14px;border:0;font-size:16px;font-weight:600;background:{{ el.btnBg }};color:{{ el.btnFg }}">{{ el.btn }}</button>
+</div>
+</sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{ isResult }}">
+<section style="padding-top:48px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:15px;color:var(--mut)">{{ res.head }}</span><div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 84px/1 'IBM Plex Mono',monospace;letter-spacing:-0.05em;color:var(--ac)">{{ res.big }}</span><span style="font-size:18px">{{ res.bigLabel }}</span></div></div>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--ln)">
+<sc-for list="{{ res.rows }}" as="r"><div style="display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--ln);font-size:15px"><span style="color:var(--mut)">{{ r.k }}</span><span style="font-family:'IBM Plex Mono',monospace">{{ r.v }}</span></div></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:13px;color:var(--mut)">ระดับความจำ</div>
+<sc-for list="{{ res.lines }}" as="l"><div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;font-size:14px"><span style="font-family:'IBM Plex Mono',monospace">{{ l.label }}</span><span style="display:flex;gap:3px"><sc-for list="{{ l.dots }}" as="d"><span style="width:8px;height:8px;border-radius:50%;background:{{ d.bg }}"></span></sc-for></span><span style="min-width:72px;text-align:right;color:{{ l.color }}">{{ l.txt }}</span></div></sc-for>
+</div>
+<sc-if value="{{ resNext.has }}"><button onClick="{{ resNext.go }}" style="min-height:58px;border-radius:16px;border:0;background:var(--ac);color:var(--onac);font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 0 var(--ln)">{{ resNext.label }}<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"></path></svg></button></sc-if>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+<button onClick="{{ goHome }}" style="min-height:54px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);font-size:16px">หน้าแรก</button>
+<button onClick="{{ again }}" style="min-height:54px;border-radius:14px;border:1.5px solid var(--ac);background:var(--acs);color:var(--ac);font-size:16px;font-weight:600">{{ againLabel }}</button>
+</div>
+</section>
+</sc-if>
+</div>
+
+<sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+<nav style="position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)">
+<div style="max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+<sc-for list="{{ navItems }}" as="n" hint-placeholder-count="3"><button onClick="{{ n.onClick }}" style="min-height:62px;background:transparent;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;color:{{ n.fg }};font-weight:{{ n.fw }}"><span style="width:52px;height:30px;border-radius:999px;background:{{ n.bar }};display:flex;align-items:center;justify-content:center"><span style="display:block;background:center/contain no-repeat url({{ n.icon }});width:20px;height:20px"></span></span>{{ n.t }}</button></sc-for>
+</div>
+</nav>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;typingSize&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:24,&quot;min&quot;:18,&quot;max&quot;:34,&quot;step&quot;:1,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;},&quot;caret&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;line&quot;,&quot;block&quot;],&quot;default&quot;:&quot;line&quot;,&quot;tsType&quot;:&quot;'line'|'block'&quot;},&quot;liveStats&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const L0=[
+{id:'pa2',code:'ป.อ.',no:'2',title:'ไม่มีความผิด ไม่มีโทษ โดยไม่มีกฎหมาย',text:'บุคคลจักต้องรับโทษในทางอาญาต่อเมื่อได้กระทำการอันกฎหมายที่ใช้ในขณะกระทำนั้นบัญญัติเป็นความผิดและกำหนดโทษไว้ และโทษที่จะลงแก่ผู้กระทำความผิดนั้น ต้องเป็นโทษที่บัญญัติไว้ในกฎหมาย',keys:['กฎหมายที่ใช้ในขณะกระทำ','บัญญัติเป็นความผิด','กำหนดโทษ']},
+{id:'pa59',code:'ป.อ.',no:'59',title:'ความรับผิดทางอาญา: เจตนา ประมาท',text:'บุคคลจะต้องรับผิดในทางอาญาก็ต่อเมื่อได้กระทำโดยเจตนา เว้นแต่จะได้กระทำโดยประมาท ในกรณีที่กฎหมายบัญญัติให้ต้องรับผิดเมื่อได้กระทำโดยประมาท หรือเว้นแต่ในกรณีที่กฎหมายบัญญัติไว้โดยแจ้งชัดให้ต้องรับผิดแม้ได้กระทำโดยไม่มีเจตนา',keys:['เจตนา','ประมาท','โดยแจ้งชัด']},
+{id:'pa288',code:'ป.อ.',no:'288',title:'ฆ่าผู้อื่น',text:'ผู้ใดฆ่าผู้อื่น ต้องระวางโทษประหารชีวิต จำคุกตลอดชีวิต หรือจำคุกตั้งแต่สิบห้าปีถึงยี่สิบปี',keys:['ฆ่า','ประหารชีวิต','ตลอดชีวิต','สิบห้าปี','ยี่สิบปี'],el:[['ผู้กระทำ','ผู้ใด'],['การกระทำ','ฆ่า'],['วัตถุแห่งการกระทำ','ผู้อื่น'],['โทษ','ประหารชีวิต จำคุกตลอดชีวิต หรือจำคุก 15–20 ปี']]},
+{id:'pa295',code:'ป.อ.',no:'295',title:'ทำร้ายร่างกาย',text:'ผู้ใดทำร้ายผู้อื่น จนเป็นเหตุให้เกิดอันตรายแก่กายหรือจิตใจของผู้อื่นนั้น ผู้นั้นกระทำความผิดฐานทำร้ายร่างกาย ต้องระวางโทษจำคุกไม่เกินสองปี หรือปรับไม่เกินสี่หมื่นบาท หรือทั้งจำทั้งปรับ',keys:['ทำร้าย','กายหรือจิตใจ','สองปี','สี่หมื่นบาท'],el:[['ผู้กระทำ','ผู้ใด'],['การกระทำ','ทำร้าย'],['วัตถุแห่งการกระทำ','ผู้อื่น'],['ผล','จนเป็นเหตุให้เกิดอันตรายแก่กายหรือจิตใจ'],['โทษ','จำคุกไม่เกิน 2 ปี หรือปรับไม่เกิน 40,000 บาท หรือทั้งจำทั้งปรับ']]},
+{id:'pa334',code:'ป.อ.',no:'334',title:'ลักทรัพย์',text:'ผู้ใดเอาทรัพย์ของผู้อื่น หรือที่ผู้อื่นเป็นเจ้าของรวมอยู่ด้วยไปโดยทุจริต ผู้นั้นกระทำความผิดฐานลักทรัพย์ ต้องระวางโทษจำคุกไม่เกินสามปี และปรับไม่เกินหกหมื่นบาท',keys:['เอาทรัพย์','เจ้าของรวม','โดยทุจริต','สามปี','หกหมื่นบาท'],el:[['ผู้กระทำ','ผู้ใด'],['การกระทำ','เอาไป'],['วัตถุแห่งการกระทำ','ทรัพย์ของผู้อื่น หรือที่ผู้อื่นเป็นเจ้าของรวมอยู่ด้วย'],['เจตนาพิเศษ','โดยทุจริต'],['โทษ','จำคุกไม่เกิน 3 ปี และปรับไม่เกิน 60,000 บาท']]},
+{id:'pa341',code:'ป.อ.',no:'341',title:'ฉ้อโกง',text:'ผู้ใดโดยทุจริต หลอกลวงผู้อื่นด้วยการแสดงข้อความอันเป็นเท็จ หรือปกปิดข้อความจริงซึ่งควรบอกให้แจ้ง และโดยการหลอกลวงดังว่านั้นได้ไปซึ่งทรัพย์สินจากผู้ถูกหลอกลวงหรือบุคคลที่สาม หรือทำให้ผู้ถูกหลอกลวงหรือบุคคลที่สาม ทำ ถอน หรือทำลายเอกสารสิทธิ ผู้นั้นกระทำความผิดฐานฉ้อโกง ต้องระวางโทษจำคุกไม่เกินสามปี หรือปรับไม่เกินหกหมื่นบาท หรือทั้งจำทั้งปรับ',keys:['หลอกลวง','ข้อความอันเป็นเท็จ','ปกปิดข้อความจริง','เอกสารสิทธิ'],el:[['ผู้กระทำ','ผู้ใด'],['การกระทำ','หลอกลวงด้วยการแสดงข้อความอันเป็นเท็จ หรือปกปิดข้อความจริง'],['ผล','ได้ไปซึ่งทรัพย์สิน หรือทำให้ทำ ถอน ทำลายเอกสารสิทธิ'],['เจตนาพิเศษ','โดยทุจริต'],['โทษ','จำคุกไม่เกิน 3 ปี หรือปรับไม่เกิน 60,000 บาท หรือทั้งจำทั้งปรับ']]},
+{id:'pa352',code:'ป.อ.',no:'352',title:'ยักยอก',text:'ผู้ใดครอบครองทรัพย์ซึ่งเป็นของผู้อื่น หรือซึ่งผู้อื่นเป็นเจ้าของรวมอยู่ด้วย เบียดบังเอาทรัพย์นั้นเป็นของตนหรือบุคคลที่สามเสียโดยทุจริต ผู้นั้นกระทำความผิดฐานยักยอก ต้องระวางโทษจำคุกไม่เกินสามปี หรือปรับไม่เกินหกหมื่นบาท หรือทั้งจำทั้งปรับ',keys:['ครอบครอง','เบียดบัง','บุคคลที่สาม','ยักยอก'],el:[['ผู้กระทำ','ผู้ใด'],['สถานะ','ครอบครองทรัพย์อยู่ก่อน'],['การกระทำ','เบียดบังเอาเป็นของตนหรือบุคคลที่สาม'],['เจตนาพิเศษ','โดยทุจริต'],['โทษ','จำคุกไม่เกิน 3 ปี หรือปรับไม่เกิน 60,000 บาท หรือทั้งจำทั้งปรับ']]},
+{id:'cc4',code:'ป.พ.พ.',no:'4',title:'การใช้และการตีความกฎหมาย',text:'การใช้กฎหมายต้องใช้ในบรรดากรณีซึ่งต้องด้วยบทบัญญัติใด ๆ แห่งกฎหมายตามตัวอักษรหรือตามความมุ่งหมายของบทบัญญัตินั้น ๆ เมื่อใดไม่มีบทกฎหมายที่จะยกมาปรับคดีได้ ให้วินิจฉัยคดีนั้นตามคลองจารีตประเพณีแห่งท้องถิ่น ถ้าไม่มีจารีตประเพณีเช่นว่านั้น ให้วินิจฉัยคดีอาศัยเทียบบทกฎหมายที่ใกล้เคียงอย่างยิ่ง และถ้าบทกฎหมายเช่นนั้นก็ไม่มีด้วยไซร้ ให้วินิจฉัยตามหลักกฎหมายทั่วไป',keys:['ตัวอักษร','ความมุ่งหมาย','จารีตประเพณีแห่งท้องถิ่น','ใกล้เคียงอย่างยิ่ง','หลักกฎหมายทั่วไป']},
+{id:'cc15',code:'ป.พ.พ.',no:'15',title:'สภาพบุคคล',text:'สภาพบุคคลย่อมเริ่มแต่เมื่อคลอดแล้วอยู่รอดเป็นทารก และสิ้นสุดลงเมื่อตาย ทารกในครรภ์มารดาก็สามารถมีสิทธิต่าง ๆ ได้ หากว่าภายหลังคลอดแล้วอยู่รอดเป็นทารก',keys:['คลอดแล้วอยู่รอดเป็นทารก','ตาย','ทารกในครรภ์มารดา','สิทธิ']},
+{id:'cc19',code:'ป.พ.พ.',no:'19',title:'บรรลุนิติภาวะโดยอายุ',text:'บุคคลย่อมพ้นจากภาวะผู้เยาว์และบรรลุนิติภาวะเมื่ออายุยี่สิบปีบริบูรณ์',keys:['ภาวะผู้เยาว์','บรรลุนิติภาวะ','ยี่สิบปีบริบูรณ์']},
+{id:'cc20',code:'ป.พ.พ.',no:'20',title:'บรรลุนิติภาวะโดยการสมรส',text:'ผู้เยาว์ย่อมบรรลุนิติภาวะเมื่อทำการสมรส หากการสมรสนั้นได้ทำตามบทบัญญัติมาตรา ๑๔๔๘',keys:['บรรลุนิติภาวะ','สมรส','๑๔๔๘']},
+{id:'cc21',code:'ป.พ.พ.',no:'21',title:'ผู้เยาว์ทำนิติกรรม ต้องได้รับความยินยอม',text:'ผู้เยาว์จะทำนิติกรรมใด ต้องได้รับความยินยอมของผู้แทนโดยชอบธรรมก่อน การใด ๆ ที่ผู้เยาว์ได้ทำลงปราศจากความยินยอมเช่นว่านั้นเป็นโมฆียะ เว้นแต่จะบัญญัติไว้เป็นอย่างอื่น',keys:['นิติกรรม','ความยินยอม','ผู้แทนโดยชอบธรรม','โมฆียะ']},
+{id:'cc22',code:'ป.พ.พ.',no:'22',title:'ผู้เยาว์: ได้สิทธิ / หลุดพ้นหน้าที่',text:'ผู้เยาว์อาจทำการใด ๆ ได้ทั้งสิ้น หากเป็นเพียงเพื่อจะได้ไปซึ่งสิทธิอันใดอันหนึ่ง หรือเป็นการเพื่อให้หลุดพ้นจากหน้าที่อันใดอันหนึ่ง',keys:['ได้ทั้งสิ้น','ได้ไปซึ่งสิทธิ','หลุดพ้นจากหน้าที่']},
+{id:'cc23',code:'ป.พ.พ.',no:'23',title:'ผู้เยาว์: การเฉพาะตัว',text:'ผู้เยาว์อาจทำการใด ๆ ได้ทั้งสิ้นซึ่งเป็นการต้องทำเองเฉพาะตัว',keys:['ได้ทั้งสิ้น','ทำเองเฉพาะตัว']},
+{id:'cc24',code:'ป.พ.พ.',no:'24',title:'ผู้เยาว์: สมแก่ฐานานุรูป จำเป็นในการดำรงชีพ',text:'ผู้เยาว์อาจทำการใด ๆ ได้ทั้งสิ้นซึ่งเป็นการสมแก่ฐานานุรูปแห่งตนและเป็นการอันจำเป็นในการดำรงชีพตามสมควร',keys:['ฐานานุรูป','จำเป็น','ดำรงชีพตามสมควร']},
+{id:'cc25',code:'ป.พ.พ.',no:'25',title:'ผู้เยาว์ทำพินัยกรรม',text:'ผู้เยาว์อาจทำพินัยกรรมได้เมื่ออายุสิบห้าปีบริบูรณ์',keys:['พินัยกรรม','สิบห้าปีบริบูรณ์']},
+{id:'cc29',code:'ป.พ.พ.',no:'29',title:'คนไร้ความสามารถทำนิติกรรม',text:'การใด ๆ อันบุคคลซึ่งศาลได้สั่งให้เป็นคนไร้ความสามารถได้กระทำลง การนั้นเป็นโมฆียะ',keys:['ศาลได้สั่ง','คนไร้ความสามารถ','โมฆียะ']},
+{id:'cc30',code:'ป.พ.พ.',no:'30',title:'คนวิกลจริตที่ศาลยังไม่สั่ง',text:'การใด ๆ อันบุคคลวิกลจริตซึ่งศาลยังมิได้สั่งให้เป็นคนไร้ความสามารถได้กระทำลง การนั้นจะเป็นโมฆียะต่อเมื่อได้กระทำในขณะที่บุคคลนั้นจริตวิกลอยู่ และคู่กรณีอีกฝ่ายหนึ่งได้รู้แล้วด้วยว่าผู้กระทำเป็นคนวิกลจริต',keys:['วิกลจริต','ยังมิได้สั่ง','จริตวิกลอยู่','ได้รู้แล้ว','โมฆียะ']},
+{id:'cc34',code:'ป.พ.พ.',no:'34',title:'คนเสมือนไร้ความสามารถ ต้องได้รับความยินยอมผู้พิทักษ์',text:'บุคคลซึ่งศาลได้สั่งให้เป็นคนเสมือนไร้ความสามารถนั้น จะต้องได้รับความยินยอมของผู้พิทักษ์ก่อนแล้วจึงจะทำการดังต่อไปนี้ได้ (๑) นำทรัพย์สินไปลงทุน (๒) รับคืนทรัพย์สินที่ไปลงทุน ต้นเงิน หรือทุนอย่างอื่น (๓) กู้ยืมหรือให้กู้ยืมเงิน ยืมหรือให้ยืมสังหาริมทรัพย์อันมีค่า (๔) รับประกันโดยประการใด ๆ อันมีผลให้ตนต้องถูกบังคับชำระหนี้ (๕) เช่าหรือให้เช่าสังหาริมทรัพย์มีกำหนดระยะเวลาเกินกว่าหกเดือน หรืออสังหาริมทรัพย์มีกำหนดระยะเวลาเกินกว่าสามปี (๖) ให้โดยเสน่หา เว้นแต่การให้ที่พอควรแก่ฐานานุรูปเพื่อการกุศล การสังคม หรือตามหน้าที่ธรรมจรรยา (๗) รับการให้โดยเสน่หาที่มีเงื่อนไขหรือค่าภาระติดพัน หรือไม่รับการให้โดยเสน่หา (๘) ทำการใด ๆ เพื่อที่จะได้มาหรือปล่อยไปซึ่งสิทธิในอสังหาริมทรัพย์หรือในสังหาริมทรัพย์อันมีค่า (๙) ก่อสร้างหรือดัดแปลงโรงเรือนหรือสิ่งปลูกสร้างอย่างอื่น หรือซ่อมแซมอย่างใหญ่ (๑๐) เสนอคดีต่อศาลหรือดำเนินกระบวนพิจารณาใด ๆ ในศาล เว้นแต่การร้องขอตามมาตรา ๓๕ หรือการร้องขอถอนผู้พิทักษ์ (๑๑) ประนีประนอมยอมความ หรือมอบข้อพิพาทให้อนุญาโตตุลาการวินิจฉัย นอกจากการที่ระบุไว้ข้างต้น ในกรณีที่มีเหตุอันสมควร ศาลมีอำนาจสั่งให้คนเสมือนไร้ความสามารถต้องได้รับความยินยอมของผู้พิทักษ์ก่อนที่จะกระทำการใด ๆ ซึ่งมิได้ระบุไว้ข้างต้นก็ได้ ถ้าผู้พิทักษ์ไม่ยอมให้ความยินยอมในการใด ๆ ตามวรรคหนึ่งหรือวรรคสองโดยไม่มีเหตุอันสมควร คนเสมือนไร้ความสามารถอาจร้องขอต่อศาลให้มีคำสั่งอนุญาตให้ทำการนั้นโดยไม่ต้องได้รับความยินยอมของผู้พิทักษ์ก็ได้ การใดที่ทำลงโดยฝ่าฝืนบทบัญญัติมาตรานี้ เป็นโมฆียะ ในกรณีที่คนเสมือนไร้ความสามารถไม่สามารถจะจัดทำกิจการได้ด้วยตนเองเพราะมีกายพิการหรือจิตฟั่นเฟือนไม่สมประกอบ ศาลอาจสั่งให้ผู้พิทักษ์เป็นผู้มีอำนาจกระทำการตามวรรคหนึ่งหรือวรรคสองแทนคนเสมือนไร้ความสามารถก็ได้ ในกรณีเช่นนี้ให้นำบทบัญญัติว่าด้วยผู้อนุบาลมาใช้บังคับแก่ผู้พิทักษ์โดยอนุโลม',keys:['ผู้พิทักษ์','ลงทุน','หกเดือน','สามปี','ฐานานุรูป','อนุญาโตตุลาการ','โมฆียะ','จิตฟั่นเฟือนไม่สมประกอบ']},
+{id:'cc61',code:'ป.พ.พ.',no:'61',title:'คนสาบสูญ',text:'ถ้าบุคคลใดได้ไปเสียจากภูมิลำเนาหรือถิ่นที่อยู่ และไม่มีใครรู้แน่ว่าบุคคลนั้นยังมีชีวิตอยู่หรือไม่ตลอดระยะเวลาห้าปี เมื่อผู้มีส่วนได้เสียหรือพนักงานอัยการร้องขอ ศาลจะสั่งให้บุคคลนั้นเป็นคนสาบสูญก็ได้ ระยะเวลาตามวรรคหนึ่งให้ลดเหลือสองปี (๑) นับแต่วันที่การรบหรือสงครามสิ้นสุดลง ถ้าบุคคลนั้นอยู่ในการรบหรือสงครามและหายไปในการรบหรือสงครามดังกล่าว (๒) นับแต่วันที่ยานพาหนะที่บุคคลนั้นเดินทางอับปาง ถูกทำลาย หรือสูญหายไป (๓) นับแต่วันที่เหตุอันตรายแก่ชีวิตนอกจากที่ระบุไว้ใน (๑) หรือ (๒) ได้ผ่านพ้นไป ถ้าบุคคลนั้นตกอยู่ในอันตรายเช่นว่านั้น',keys:['ภูมิลำเนา','ห้าปี','ผู้มีส่วนได้เสีย','พนักงานอัยการ','คนสาบสูญ','สองปี','อับปาง']},
+{id:'cc62',code:'ป.พ.พ.',no:'62',title:'ผลของการเป็นคนสาบสูญ',text:'บุคคลซึ่งศาลได้มีคำสั่งให้เป็นคนสาบสูญ ให้ถือว่าถึงแก่ความตายเมื่อครบกำหนดระยะเวลาดังที่ระบุไว้ในมาตรา ๖๑',keys:['คนสาบสูญ','ถือว่าถึงแก่ความตาย','ครบกำหนดระยะเวลา','๖๑']},
+{id:'cc193_3',code:'ป.พ.พ.',no:'193/3',title:'การนับระยะเวลา',text:'ถ้ากำหนดระยะเวลาเป็นหน่วยเวลาที่สั้นกว่าวัน ให้เริ่มนับในขณะที่เริ่มการนั้น ถ้ากำหนดระยะเวลาเป็นวัน สัปดาห์ เดือน หรือปี มิให้นับวันแรกแห่งระยะเวลานั้นรวมเข้าด้วย เว้นแต่จะเริ่มการในวันนั้นเองตั้งแต่เวลาที่ถือได้ว่าเริ่มทำการงานกันตามประเพณี',keys:['สั้นกว่าวัน','ขณะที่เริ่มการ','มิให้นับวันแรก','ตามประเพณี']},
+{id:'cc5',code:'ป.พ.พ.',no:'5',title:'หลักสุจริต',text:'ในการใช้สิทธิแห่งตนก็ดี ในการชำระหนี้ก็ดี บุคคลทุกคนต้องกระทำโดยสุจริต',keys:['ใช้สิทธิ','ชำระหนี้','สุจริต']},
+{id:'cc149',code:'ป.พ.พ.',no:'149',title:'นิยามนิติกรรม',text:'นิติกรรม หมายความว่า การใดๆ อันทำลงโดยชอบด้วยกฎหมายและด้วยใจสมัคร มุ่งโดยตรงต่อการผูกนิติสัมพันธ์ขึ้นระหว่างบุคคล เพื่อจะก่อ เปลี่ยนแปลง โอน สงวน หรือระงับซึ่งสิทธิ',keys:['ชอบด้วยกฎหมาย','ใจสมัคร','นิติสัมพันธ์','ระงับ']},
+{id:'cc420',code:'ป.พ.พ.',no:'420',title:'ละเมิด',text:'ผู้ใดจงใจหรือประมาทเลินเล่อ ทำต่อบุคคลอื่นโดยผิดกฎหมายให้เขาเสียหายถึงแก่ชีวิตก็ดี แก่ร่างกายก็ดี อนามัยก็ดี เสรีภาพก็ดี ทรัพย์สินหรือสิทธิอย่างหนึ่งอย่างใดก็ดี ท่านว่าผู้นั้นทำละเมิดจำต้องใช้ค่าสินไหมทดแทนเพื่อการนั้น',keys:['จงใจ','ประมาทเลินเล่อ','โดยผิดกฎหมาย','ค่าสินไหมทดแทน'],el:[['ผู้กระทำ','ผู้ใด'],['จิตใจ','จงใจหรือประมาทเลินเล่อ'],['การกระทำ','ทำต่อบุคคลอื่นโดยผิดกฎหมาย'],['ผล','ให้เขาเสียหายแก่ชีวิต ร่างกาย อนามัย เสรีภาพ ทรัพย์สิน หรือสิทธิ'],['ผลทางกฎหมาย','ต้องใช้ค่าสินไหมทดแทน']]},
+{id:'cc453',code:'ป.พ.พ.',no:'453',title:'ซื้อขาย',text:'อันว่าซื้อขายนั้น คือสัญญาซึ่งบุคคลฝ่ายหนึ่ง เรียกว่าผู้ขาย โอนกรรมสิทธิ์แห่งทรัพย์สินให้แก่บุคคลอีกฝ่ายหนึ่ง เรียกว่าผู้ซื้อ และผู้ซื้อตกลงว่าจะใช้ราคาทรัพย์สินนั้นให้แก่ผู้ขาย',keys:['ผู้ขาย','กรรมสิทธิ์','ผู้ซื้อ','ราคา']},
+{id:'cc1336',code:'ป.พ.พ.',no:'1336',title:'สิทธิของเจ้าของกรรมสิทธิ์',text:'ภายในบังคับแห่งกฎหมาย เจ้าของทรัพย์สินมีสิทธิใช้สอยและจำหน่ายทรัพย์สินของตนและได้ซึ่งดอกผลแห่งทรัพย์สินนั้น กับทั้งมีสิทธิติดตามและเอาคืนซึ่งทรัพย์สินของตนจากบุคคลผู้ไม่มีสิทธิจะยึดถือไว้ และมีสิทธิขัดขวางมิให้ผู้อื่นสอดเข้าเกี่ยวข้องกับทรัพย์สินนั้นโดยมิชอบด้วยกฎหมาย',keys:['ใช้สอย','จำหน่าย','ดอกผล','ติดตามและเอาคืน','ขัดขวาง']},
+{id:'cc1382',code:'ป.พ.พ.',no:'1382',title:'ครอบครองปรปักษ์',text:'บุคคลใดครอบครองทรัพย์สินของผู้อื่นไว้โดยความสงบและโดยเปิดเผยด้วยเจตนาเป็นเจ้าของ ถ้าเป็นอสังหาริมทรัพย์ได้ครอบครองติดต่อกันเป็นเวลาสิบปี ถ้าเป็นสังหาริมทรัพย์ได้ครอบครองติดต่อกันเป็นเวลาห้าปี ไซร้ ท่านว่าบุคคลนั้นได้ไปซึ่งกรรมสิทธิ์',keys:['ความสงบ','เปิดเผย','เจตนาเป็นเจ้าของ','สิบปี','ห้าปี']},
+{id:'cpc55',code:'ป.วิ.พ.',no:'55',title:'สิทธิเสนอคดีต่อศาล',text:'เมื่อมีข้อโต้แย้งเกิดขึ้นเกี่ยวกับสิทธิหรือหน้าที่ของบุคคลใดตามกฎหมายแพ่ง หรือบุคคลใดจะต้องใช้สิทธิทางศาล บุคคลนั้นชอบที่จะเสนอคดีของตนต่อศาลซึ่งมีเขตอำนาจได้ตามบทบัญญัติแห่งกฎหมายแพ่งและประมวลกฎหมายนี้',keys:['ข้อโต้แย้ง','สิทธิหรือหน้าที่','ใช้สิทธิทางศาล','เขตอำนาจ']},
+{id:'cpc148',code:'ป.วิ.พ.',no:'148',title:'ฟ้องซ้ำ',text:'คดีที่ได้มีคำพิพากษาหรือคำสั่งถึงที่สุดแล้วนั้น ห้ามมิให้คู่ความเดียวกันรื้อร้องฟ้องกันอีกในประเด็นที่ได้วินิจฉัยโดยอาศัยเหตุอย่างเดียวกัน',keys:['ถึงที่สุด','คู่ความเดียวกัน','รื้อร้องฟ้อง','เหตุอย่างเดียวกัน']},
+{id:'crpc2',code:'ป.วิ.อ.',no:'2(4)',title:'นิยามผู้เสียหาย',text:'ผู้เสียหาย หมายถึงบุคคลผู้ได้รับความเสียหายเนื่องจากการกระทำผิดฐานใดฐานหนึ่ง รวมทั้งบุคคลอื่นที่มีอำนาจจัดการแทนได้ดั่งบัญญัติไว้ในมาตรา ๔, ๕ และ ๖',keys:['ได้รับความเสียหาย','กระทำผิด','อำนาจจัดการแทน']},
+{id:'crpc120',code:'ป.วิ.อ.',no:'120',title:'ต้องสอบสวนก่อนฟ้อง',text:'ห้ามมิให้พนักงานอัยการยื่นฟ้องคดีใดต่อศาล โดยมิได้มีการสอบสวนในความผิดนั้นก่อน',keys:['พนักงานอัยการ','ยื่นฟ้อง','สอบสวน']},
+{id:'crpc227',code:'ป.วิ.อ.',no:'227',title:'การชั่งน้ำหนักพยาน',text:'ให้ศาลใช้ดุลพินิจวินิจฉัยชั่งน้ำหนักพยานหลักฐานทั้งปวงที่สืบมา อย่าพิพากษาลงโทษจนกว่าจะแน่ใจว่ามีการกระทำผิดจริงและจำเลยเป็นผู้กระทำความผิดนั้น',keys:['ดุลพินิจ','ชั่งน้ำหนัก','แน่ใจ','จำเลย']},
+{id:'con1',code:'รธน.',no:'1',title:'รูปแบบของรัฐ',text:'ประเทศไทยเป็นราชอาณาจักรอันหนึ่งอันเดียว จะแบ่งแยกมิได้',keys:['ราชอาณาจักร','อันหนึ่งอันเดียว','แบ่งแยกมิได้']},
+{id:'con2',code:'รธน.',no:'2',title:'ระบอบการปกครอง',text:'ประเทศไทยมีการปกครองระบอบประชาธิปไตยอันมีพระมหากษัตริย์ทรงเป็นประมุข',keys:['ประชาธิปไตย','พระมหากษัตริย์','ประมุข']},
+{id:'con3',code:'รธน.',no:'3',title:'อำนาจอธิปไตย',text:'อำนาจอธิปไตยเป็นของปวงชนชาวไทย พระมหากษัตริย์ผู้ทรงเป็นประมุขทรงใช้อำนาจนั้นทางรัฐสภา คณะรัฐมนตรี และศาล ตามบทบัญญัติแห่งรัฐธรรมนูญ',keys:['อำนาจอธิปไตย','ปวงชนชาวไทย','รัฐสภา','คณะรัฐมนตรี','ศาล']},
+{id:'con5',code:'รธน.',no:'5',title:'ความเป็นกฎหมายสูงสุด',text:'รัฐธรรมนูญเป็นกฎหมายสูงสุดของประเทศ บทบัญญัติใดของกฎหมาย กฎ หรือการกระทำใด ขัดหรือแย้งต่อรัฐธรรมนูญ บทบัญญัตินั้นหรือการกระทำนั้นเป็นอันใช้บังคับมิได้',keys:['กฎหมายสูงสุด','ขัดหรือแย้ง','ใช้บังคับมิได้']}
+];
+const BASE=L0.filter(l=>l.code==='ป.พ.พ.');let L=BASE;
+const rebuildL=cu=>{const m=new Map(cu.map(c=>[c.id,c]));L=[...BASE.map(l=>m.get(l.id)||l),...cu.filter(c=>!BASE.some(b=>b.id===c.id))];};
+const CODES0=[['all','ทั้งหมด'],['ป.พ.พ.','ป.พ.พ.'],['ป.อ.','ป.อ.'],['ป.วิ.พ.','ป.วิ.พ.'],['ป.วิ.อ.','ป.วิ.อ.'],['รธน.','รัฐธรรมนูญ']];
+const CODES=CODES0.filter(c=>c[0]==='all'||L.some(l=>l.code===c[0]));
+const MODES=[
+{id:'type',name:'พิมพ์ตามตัวบท',desc:'พิมพ์ทับตัวอักษรสีเทา วัด WPM และความแม่นยำ'},
+{id:'recall',name:'พิมพ์จากความจำ',desc:'เห็นแค่เลขมาตรา พิมพ์จนจบแล้วกดส่ง จะเห็นสีแดงตรงที่ผิดพร้อมเฉลย'},
+{id:'cloze',name:'เติมคำในช่องว่าง',desc:'เลือกคำสำคัญเติมลงในตัวบท'},
+{id:'match',name:'จับคู่มาตรา',desc:'จับเลขมาตรากับเรื่องให้ครบเร็วที่สุด'},
+{id:'order',name:'เรียงวลี',desc:'เรียงท่อนของตัวบทให้ถูกลำดับ'},
+{id:'srs',name:'แฟลชการ์ด',desc:'นึกตัวบทก่อนเฉลย แล้วให้คะแนนตัวเอง'},
+{id:'guess',name:'ทายเลขมาตรา',desc:'อ่านตัวบทแล้วเลือกเลขมาตราที่ถูก'},
+{id:'elem',name:'แยกองค์ประกอบ',desc:'ผู้กระทำ การกระทำ เจตนาพิเศษ และโทษ'}
+];
+const IV=[0,1,3,7,14,30];
+const KEY='lawrecall.v1';
+const PRIV={id:'priv1',name:'กฎหมายเอกชน',cat:'civ',ids:['cc4','cc15','cc19','cc20','cc21','cc22','cc23','cc24','cc25','cc29','cc30','cc34','cc61','cc62','cc193_3']};
+const SEED_SUBJ=[PRIV,{id:'s2',name:'นิติกรรม สัญญา ละเมิด',ids:['cc5','cc149','cc420','cc453']}];
+const today=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/86400000);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lab=l=>`${l.code} ${l.no}`;
+const CATS={civ:['ป.พ.พ.','กฎหมายแพ่ง'],cri:['ป.อ.','กฎหมายอาญา'],cpc:['ป.วิ.พ.','กฎหมายวิแพ่ง'],crpc:['ป.วิ.อ.','กฎหมายวิอาญา']};
+const noCmp=(a,b)=>{const pa=a.no.split('/').map(x=>parseInt(x)||0),pb=b.no.split('/').map(x=>parseInt(x)||0);return (pa[0]-pb[0])||((pa[1]||0)-(pb[1]||0));};
+const byId=id=>L.find(l=>l.id===id);
+const thd=x=>String(x).replace(/[๐-๙]/g,d=>d.charCodeAt(0)-0x0E50);
+const autoKeys=t=>[...new Set(t.split(' ').map(w=>w.replace(/[()]/g,'')).filter(w=>w.length>=5&&w.length<=16))].sort((a,b)=>b.length-a.length).slice(0,4);
+const mkProv=({id,code,no,title,paras,keys,base})=>{const ex=id?null:L.find(l=>l.code===code&&l.no===no);const pid=id||(ex&&ex.id)||('u_'+encodeURIComponent(code+'_'+no));const text=paras.join(' ');const b=base||ex;
+  const k=(keys&&keys.length?keys:((b&&b.text===text&&b.keys)||autoKeys(text))).filter(x=>text.includes(x));
+  return {...(b||{}),id:pid,code,no,title:title||(b&&b.title)||paras[0].split(' ').slice(0,4).join(' ').slice(0,40),text,paraKeys:paras.slice(1).map(p=>p.slice(0,24)),keys:k,custom:true};};
+const parasOf=l=>{const T=l.text;const ps=[0,...(l.paraKeys||PARA[l.id]||[]).map(k=>T.indexOf(k)).filter(i=>i>0)].sort((a,b)=>a-b);return ps.map((p,i)=>T.slice(p,ps[i+1]??T.length).trim());};
+const parseImport=(raw,code)=>{raw=(raw||'').replace(/\r/g,'').trim();if(!raw)return [];const clean=n=>thd(String(n)).replace(/^ม(าตรา|\.)\s*/,'').replace(/\s/g,'');
+  if(/^[\[{]/.test(raw)){try{let j=JSON.parse(raw);if(!Array.isArray(j))j=j.provisions||[j];return j.filter(x=>x&&x.no&&x.text).map(x=>({code:x.code||code,no:clean(x.no),title:x.title||'',paras:String(x.text).split('\n').map(s=>s.trim()).filter(Boolean),keys:Array.isArray(x.keys)?x.keys:null}));}catch(e){return [];}}
+  const re=/(^|\n)[ \t]*มาตรา[ \t]*([๐-๙0-9]+(?:[ \t]*\/[ \t]*[๐-๙0-9]+)?)/g;const ms=[];let m;while((m=re.exec(raw)))ms.push({i:m.index+m[1].length,end:re.lastIndex,no:clean(m[2])});
+  return ms.map((x,k)=>{const body=raw.slice(x.end,k+1<ms.length?ms[k+1].i:raw.length);return {code,no:x.no,title:'',paras:body.split('\n').map(s=>s.trim()).filter(Boolean),keys:null};}).filter(x=>x.paras.length);};
+const TH=['หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด'];
+const PARA={cc4:['เมื่อใดไม่มีบทกฎหมาย'],cc15:['ทารกในครรภ์มารดา'],cc34:['นอกจากการที่ระบุไว้ข้างต้น','ถ้าผู้พิทักษ์ไม่ยอม','การใดที่ทำลงโดยฝ่าฝืน','ในกรณีที่คนเสมือน'],cc61:['ระยะเวลาตามวรรคหนึ่ง'],cc193_3:['ถ้ากำหนดระยะเวลาเป็นวัน']};
+const units=l=>{const T=l.text;const ps=[0,...(l.paraKeys||PARA[l.id]||[]).map(k=>T.indexOf(k)).filter(i=>i>0)].sort((a,b)=>a-b);const multi=ps.length>1;const out=[];
+  ps.forEach((p,pi)=>{const seg=T.slice(p,pi+1<ps.length?ps[pi+1]:T.length);const re=/\([๐-๙0-9]+\)/g;const cuts=[];let m;while((m=re.exec(seg))){if(!/(ใน|ตาม|หรือ|และ)\s*$/.test(seg.slice(0,m.index)))cuts.push([m.index,m[0]]);}
+    const pt=multi?'วรรค'+TH[pi]:'';const first=cuts.length?cuts[0][0]:seg.length;const pre=seg.slice(0,first).trim();if(pre)out.push({tag:pt,t:pre,pad:'0'});
+    cuts.forEach(([ci,mk],k)=>{const e=k+1<cuts.length?cuts[k+1][0]:seg.length;out.push({tag:(pt?pt+' · ':'')+'อนุ '+mk,t:seg.slice(ci+mk.length,e).trim(),pad:'18px'});});});
+  return out;};
+const ochunks=l=>{const us=units(l);const tot=us.reduce((a,u)=>a+u.t.length,0);const o=[];us.forEach(u=>{const n=us.length>=6?1:Math.max(1,Math.round(7*u.t.length/tot));chunks(u.t,n).forEach(t=>o.push({t,tag:u.tag}));});return o;};
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const dots=lv=>[0,1,2,3,4].map(i=>({bg:i<lv?'var(--ac)':'var(--ln)'}));
+const chunks=(t,mx=7)=>{const w=[];t.split(' ').filter(Boolean).forEach(x=>{if((x==='ๆ'||x.length<4)&&w.length)w[w.length-1]+=' '+x;else w.push(x);});const n=Math.max(1,Math.min(mx,w.length));const tot=w.reduce((a,x)=>a+x.length,0),tg=tot/n;const o=[];let cur=[],len=0;w.forEach(x=>{cur.push(x);len+=x.length;if(len>=tg&&o.length<n-1){o.push(cur.join(' '));cur=[];len=0;}});if(cur.length)o.push(cur.join(' '));return o;};
+const bounds=t=>{const s=new Set([0]);let o=0;try{for(const x of new Intl.Segmenter('th',{granularity:'grapheme'}).segment(t)){o+=x.segment.length;s.add(o);}}catch(e){for(let i=0;i<=t.length;i++)s.add(i);}return s;};
+const PAL=[{bg:'#FFE6D8',fg:'#E0683A'},{bg:'#DCF3E6',fg:'#2E9460'},{bg:'#DDEAFF',fg:'#3C70D0'},{bg:'#DDF3FB',fg:'#1D8FB8'},{bg:'#FFF0C4',fg:'#B98408'},{bg:'#FFE0EC',fg:'#D2477F'}];
+const IC={type:'M5 6h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM7 10h.01M11 10h.01M15 10h.01M8 14h8',recall:'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z',cloze:'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',match:'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',order:'M10 6h10M10 12h10M10 18h10M4 5l1.5-1v4M3.5 11h2.5l-2.5 3h2.5M3.5 17h2.5v3h-2.5',srs:'M8 4h10a2 2 0 0 1 2 2v10M6 8h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z',guess:'M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.6V15M12 19h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z',elem:'M5 4h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM14 4h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM5 13h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1zM16.5 13v7M13 16.5h7',book:'M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h10',home:'M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z',stats:'M5 20V11M12 20V5M19 20v-6',civ:'M8 12l3 3 5-5M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',cri:'M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z',cpc:'M12 4v16M7 20h10M5 8h14M5 8l-2.5 6a2.5 2.5 0 0 0 5 0zM19 8l-2.5 6a2.5 2.5 0 0 0 5 0z',crpc:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM16 16l4 4',clr:'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5',all:'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 12l3 3 5-6',add:'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 8.5v7M8.5 12h7',done:'M5 12l5 5L19 7',moon:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',sun:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'};
+const ico=(k,c)=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[k]}"/></svg>`);
+const MODE_NAME=Object.fromEntries(MODES.map(m=>[m.id,m.name]));
+const rdiff=(a,b)=>{const nz=x=>x.replace(/\s+/g,' ').trim();a=[...nz(a)];b=[...nz(b)];const n=a.length,m=b.length;const W=m+1;const dp=new Uint16Array((n+1)*W);
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i*W+j]=a[i]===b[j]?dp[(i+1)*W+j+1]+1:Math.max(dp[(i+1)*W+j],dp[i*W+j+1]);
+  const ops=[];let i=0,j=0;const push=(k,c)=>{const l=ops[ops.length-1];if(l&&l[0]===k)l[1]+=c;else ops.push([k,c]);};
+  while(i<n&&j<m){if(a[i]===b[j]){push('eq',a[i]);i++;j++;}else if(dp[(i+1)*W+j]>=dp[i*W+j+1]){push('add',a[i]);i++;}else{push('miss',b[j]);j++;}}
+  while(i<n)push('add',a[i++]);while(j<m)push('miss',b[j++]);
+  const lcs=dp[0];const acc=m?Math.max(0,Math.round((lcs-Math.max(0,n-lcs)*0.5)/m*100)):0;return {segs:ops,acc};};
+function seed(){const t=today();const prog={};L.forEach((l,i)=>{if(i%3!==2)prog[l.id]={lv:(i*7)%5,due:t+((i%4)===0?-1:(i%5)-1),n:i%6+1};});
+const days=[1,2,3,4,5,6,7,8,11,12].map(d=>t-d);
+const hist=[[8,'type',28,93],[6,'recall',19,88],[4,'type',33,95],[3,'cloze'],[2,'type',35,96],[1,'match'],[1,'recall',22,91]].map(([d,mode,wpm,acc])=>({t:t-d,mode,wpm,acc,xp:40}));
+return {prog,days,hist};}
+
+class Component extends DCLogic {
+  constructor(p){super(p);let s=null;try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+    const base={screen:'home',code:'all',subj:'all',subjects:SEED_SUBJ,newName:'',cur:null,secBack:'lib',theme:'light',sid:null,g:null,res:null,tf:false,peek:false};
+    this.state=s&&s.prog?{...base,...s,screen:'home'}:{...base,...seed()};
+    rebuildL(this.state.custom||[]);this._cv=this.state.custom;
+    this.state.subjects=this.state.subjects.filter(x=>x.id!=='s1').map(x=>({...x,cat:x.cat||'civ',name:x.id==='priv1'?x.name.replace(' (สอบเสาร์)',''):x.name,ids:x.ids.filter(id=>L.some(l=>l.id===id))}));
+    if(!this.state.subjects.some(x=>x.id==='priv1'))this.state.subjects=[PRIV,...this.state.subjects];
+    this.taRef=React.createRef();}
+  componentDidMount(){this.apply();this._iv=setInterval(()=>{const s=this.state;if(s.screen==='game'&&s.g&&(s.g.mode==='match'||(s.g.start&&!s.g.done)))this.forceUpdate();},500);}
+  componentWillUnmount(){clearInterval(this._iv);}
+  componentDidUpdate(pp,ps){this.apply();const s=this.state;if(ps.prog!==s.prog||ps.hist!==s.hist||ps.theme!==s.theme||ps.code!==s.code||ps.seen!==s.seen||ps.subjects!==s.subjects||ps.subj!==s.subj||ps.custom!==s.custom){try{localStorage.setItem(KEY,JSON.stringify({custom:s.custom,prog:s.prog,hist:s.hist,days:s.days,theme:s.theme,code:s.code,seen:s.seen,subjects:s.subjects,subj:s.subj}));}catch(e){}}}
+  apply(){const r=document.documentElement;r.dataset.theme=this.state.theme;const [h,c,l,bh]=[240,0.14,0.56,230];const dk=this.state.theme==='dark';
+    const V=dk?{bg:`oklch(0.2 0.02 ${h})`,sf:`oklch(0.25 0.025 ${h})`,ink:`oklch(0.95 0.01 ${h})`,mut:`oklch(0.74 0.02 ${h})`,gh:`oklch(0.48 0.02 ${h})`,ln:`oklch(0.33 0.02 ${h})`,ac:`oklch(0.8 ${c*0.85} ${h})`,acs:`oklch(0.33 0.05 ${h})`,onac:`oklch(0.2 0.02 ${h})`}:{bg:`oklch(0.985 0.012 ${bh})`,sf:'#fff',ink:`oklch(0.28 0.03 ${h})`,mut:`oklch(0.52 0.03 ${h})`,gh:`oklch(0.78 0.02 ${h})`,ln:`oklch(0.92 0.015 ${h})`,ac:`oklch(${l} ${c} ${h})`,acs:`oklch(0.955 0.03 ${bh})`,onac:'#fff'};
+    Object.entries(V).forEach(([k,x])=>r.style.setProperty('--'+k,x));r.style.setProperty('--tsz',(this.props.typingSize??24)+'px');}
+  subjObj(){return this.state.subjects.find(x=>x.id===this.state.subj)||null;}
+  openSec(id){this.setState(s=>({screen:'sec',sid:id,secBack:['subj','stats','codelib'].includes(s.screen)?s.screen:(s.screen==='sec'?s.secBack:'lib'),seen:[id,...(s.seen||[]).filter(x=>x!==id)].slice(0,20)}));}
+  subjPool(){const sj=this.subjObj();return sj?L.filter(l=>sj.ids.includes(l.id)):L;}
+  pool(){let p=this.subjPool();const sel=this.state.sel;if(sel)p=p.filter(l=>sel.includes(l.id));return p.length?p:L;}
+  pick(list){const t=today(),P=this.state.prog;const due=list.filter(l=>P[l.id]&&P[l.id].due<=t).sort((a,b)=>P[a.id].lv-P[b.id].lv);const src=due.length?due.slice(0,3):list;return src[Math.floor(Math.random()*src.length)];}
+  addSubject(){const n=(this.state.newName||'').trim();if(!n)return;const id='s'+Date.now();const cat=this.state.screen==='lib'?(this.state.addCat||this.state.cat||'civ'):(this.state.cat||'civ');this.setState(st=>({subjects:[...st.subjects,{id,name:n,cat,ids:[]}],cat,newName:'',cur:id,screen:'pick',code:'all'}));}
+  openEdit(l,back,addTo,code){this.setState({screen:'edit',ed:{id:l?l.id:null,code:l?l.code:(code||'ป.พ.พ.'),no:l?l.no:'',title:l?l.title:'',text:l?parasOf(l).join('\n'):'',keys:l?(l.keys||[]).join(', '):'',back,addTo,err:''}});}
+  saveEdit(){const e=this.state.ed;const no=thd(e.no.trim().replace(/^ม(าตรา|\.)\s*/,'')).replace(/\s/g,'');const ps=e.text.split('\n').map(x=>x.trim()).filter(Boolean);
+    if(!no||!ps.length){this.setState({ed:{...e,err:'ใส่เลขมาตราและตัวบทก่อนบันทึก'}});return;}
+    const keys=e.keys.split(',').map(x=>x.trim()).filter(Boolean);const p=mkProv({id:e.id,code:e.code,no,title:e.title.trim(),paras:ps,keys,base:e.id?byId(e.id):null});
+    this.setState(st=>({custom:[...(st.custom||[]).filter(c=>c.id!==p.id),p],subjects:e.addTo?st.subjects.map(x=>x.id===e.addTo&&!x.ids.includes(p.id)?{...x,ids:[...x.ids,p.id]}:x):st.subjects,screen:e.back==='sec'?'sec':(e.back||'lib'),sid:e.back==='sec'?p.id:st.sid,sjMsg:e.addTo?`เพิ่ม ${p.code} ${p.no} แล้ว`:st.sjMsg,addMsg:`บันทึก ${p.code} มาตรา ${p.no} เข้าคลังแล้ว`+(e.addTo?' และใส่ในวิชาแล้ว':''),sjMsgC:'var(--ac)'}));}
+  focusTyper(){setTimeout(()=>this.taRef.current&&this.taRef.current.focus(),80);}
+  start(mode,sid){
+    const base=this.pool();const fixed=sid?byId(sid):null;const t=today(),P=this.state.prog;
+    const choose=(f,loose)=>{if(fixed&&f(fixed))return fixed;const c=base.filter(f);if(c.length)return this.pick(c);const c2=base.filter(loose||(()=>false));return this.pick(c2.length?c2:L.filter(f));};
+    let g={mode,fromSid:sid||null,back:['sec','subj','flow'].includes(this.state.screen)?this.state.screen:'home'};
+    if(mode==='type'){const sec=choose(()=>true);g={...g,sec,B:bounds(sec.text),typed:'',errors:0,keys:0,start:null,hintEnd:0,hints:0,done:false};}
+    else if(mode==='recall'){const sec=choose(()=>true);g={...g,sec,ans:'',sub:false,peeked:false,tries:0,start:Date.now()};}
+    else if(mode==='cloze'){const sec=choose(l=>l.keys&&l.keys.length);const T=sec.text,rs=[];
+      sec.keys.forEach(k=>{let i=T.indexOf(k);while(i>=0&&rs.some(r=>i<r[1]&&i+k.length>r[0]))i=T.indexOf(k,i+1);if(i>=0)rs.push([i,i+k.length,k]);});
+      rs.sort((a,b)=>a[0]-b[0]);const segs=[];let p=0;rs.forEach((r,j)=>{if(r[0]>p)segs.push({t:T.slice(p,r[0])});segs.push({blank:j});p=r[1];});if(p<T.length)segs.push({t:T.slice(p)});
+      const answers=rs.map(r=>r[2]);const others=[...new Set(shuffle(L.filter(l=>l.id!==sec.id).flatMap(l=>l.keys)))].filter(k=>!answers.includes(k)).slice(0,2);
+      g={...g,sec,segs,answers,bank:shuffle([...answers,...others]),fills:answers.map(()=>null),active:0,checked:false};}
+    else if(mode==='order'){const sec=choose(l=>ochunks(l).length>=4,l=>ochunks(l).length>=2);const oc=ochunks(sec);const ch=oc.map(x=>x.t),tg=oc.map(x=>x.tag);let pool=ch.map((t,i)=>({t,i}));do{pool=shuffle(pool);}while(pool.every((x,i)=>x.i===i));g={...g,sec,ch,tg,pool,ans:[],checked:false};}
+    else if(mode==='match'){let secs=shuffle(base).slice(0,5);if(secs.length<5)secs=[...secs,...shuffle(L.filter(l=>!secs.includes(l))).slice(0,5-secs.length)];const ids=secs.map(s=>s.id);g={...g,left:shuffle(ids),right:shuffle(ids),selL:null,selR:null,done:[],wrong:null,miss:0,start:Date.now()};}
+    else if(mode==='srs'){let q=base.filter(l=>P[l.id]&&P[l.id].due<=t).sort((a,b)=>P[a.id].due-P[b.id].due);if(sid)q=[fixed];else if(!q.length)q=[...base].sort((a,b)=>(P[a.id]?.lv??-1)-(P[b.id]?.lv??-1)).slice(0,5);g={...g,q:q.slice(0,10).map(l=>l.id),i:0,flipped:false,log:[]};}
+    else if(mode==='guess'){let secs=shuffle(base).slice(0,5);if(secs.length<5)secs=[...secs,...shuffle(L.filter(l=>!secs.includes(l))).slice(0,5-secs.length)];
+      const rounds=secs.map(s=>{const same=shuffle(L.filter(l=>l.code===s.code&&l.id!==s.id));const rest=shuffle(L.filter(l=>l.code!==s.code));return {id:s.id,opts:shuffle([s,...[...same,...rest].slice(0,3)]).map(l=>l.id),picked:null};});
+      g={...g,rounds,i:0,score:0};}
+    else if(mode==='elem'){const sec=choose(l=>!!l.el);const vals=sec.el.map(e=>e[1]);const dis=[...new Set(shuffle(L.filter(l=>l.el&&l.id!==sec.id).flatMap(l=>l.el.map(e=>e[1]))))].filter(v=>!vals.includes(v)).slice(0,2);
+      g={...g,sec,chips:shuffle([...vals,...dis]),fills:vals.map(()=>null),active:0,checked:false};}
+    this.setState({screen:'game',g,peek:false},()=>{if(mode==='type')this.focusTyper();});
+  }
+  finish(r){this.setState(s=>{const t=today();const prog={...s.prog};const lines=[];
+    (r.changes||[]).forEach(([id,d])=>{const p=prog[id]||{lv:0,due:t,n:0};const lv=clamp(p.lv+d,0,5);prog[id]={lv,due:t+IV[lv],n:p.n+1};lines.push({id,from:p.lv,to:lv});});
+    if(r.lines)lines.push(...r.lines);
+    const days=s.days.includes(t)?s.days:[...s.days,t];const hist=[...s.hist,{t,mode:r.mode,wpm:r.wpm,acc:r.acc,xp:r.xp||20}].slice(-300);
+    return {prog,days,hist,screen:'result',res:{...r,lines,secId:s.g&&s.g.sec?s.g.sec.id:null,back:s.g?s.g.back:'home'}};});}
+  onType=e=>{const g=this.state.g;if(!g||g.done)return;const T=g.sec.text;let v=e.target.value.replace(/\n/g,'');if(v.length>T.length)v=v.slice(0,T.length);
+    let errors=g.errors,keys=g.keys;if(v.length>g.typed.length){for(let i=g.typed.length;i<v.length;i++){keys++;if(v[i]!==T[i])errors++;}}
+    const ng={...g,typed:v,errors,keys,start:g.start??Date.now()};
+    if(v===T){ng.done=true;ng.end=Date.now();this.setState({g:ng});setTimeout(()=>this.finishTyping(),350);}else this.setState({g:ng});};
+  finishTyping(){const g=this.state.g;if(!g)return;const T=g.sec.text;const secs=Math.max((g.end-g.start)/1000,1);const wpm=Math.round(T.length/5/(secs/60));const acc=Math.max(0,Math.round((g.keys-g.errors)/Math.max(g.keys,1)*100));
+    let d=acc>=95?1:acc<80?-1:0;if(g.mode==='recall')d=g.hints===0&&acc>=90?2:(g.hints<=2&&acc>=85?1:(acc<70?-1:0));
+    const rows=[['ความแม่นยำ',acc+'%'],['เวลา',fmt(secs)],['พิมพ์ผิด',g.errors+' ครั้ง']];if(g.mode==='recall')rows.push(['ใช้คำใบ้',g.hints+' ครั้ง']);
+    this.finish({mode:g.mode,sid:g.fromSid,head:g.mode==='recall'?'พิมพ์จากความจำครบทั้งมาตรา':'พิมพ์ครบทั้งมาตรา',big:wpm,bigLabel:'WPM',rows,changes:[[g.sec.id,d]],wpm,acc,xp:Math.round(T.length/8*acc/100)});}
+  rate(r){const g=this.state.g;const id=g.q[g.i];const t=today();this.setState(s=>{const p=s.prog[id]||{lv:0,due:t,n:0};let lv=p.lv,due;
+    if(r==='again'){lv=0;due=t;}else if(r==='hard'){due=t+Math.max(1,Math.ceil(IV[lv]/2));}else if(r==='good'){lv=clamp(lv+1,0,5);due=t+IV[lv];}else{lv=clamp(lv+2,0,5);due=t+IV[lv];}
+    const prog={...s.prog,[id]:{lv,due,n:p.n+1}};const log=[...g.log,{id,from:p.lv,to:lv}];return {prog,g:{...g,i:g.i+1,flipped:false,log}};},()=>{const ng=this.state.g;if(ng.i>=ng.q.length){const good=ng.log.filter(x=>x.to>=x.from).length;this.finish({mode:'srs',sid:ng.fromSid,head:'ทบทวนครบแล้ว',big:ng.q.length,bigLabel:'การ์ด',rows:[['จำได้',good+' ใบ'],['ต้องทบทวนอีก',(ng.q.length-good)+' ใบ']],lines:ng.log,xp:ng.q.length*8});}});}
+  renderVals(){
+    const s=this.state,g=s.g,t=today(),P=s.prog,scr=s.screen;if(this._cv!==s.custom){rebuildL(s.custom||[]);this._cv=s.custom;}
+    const go=screen=>()=>this.setState(screen==='add'?{screen,peek:false,addFrom:scr==='add'?(s.addFrom||'home'):scr,addMsg:''}:{screen,peek:false});
+    const lvOf=id=>P[id]?P[id].lv:0;
+    const dueTxt=id=>{const p=P[id];if(!p)return 'ยังไม่เริ่ม';return p.due<=t?'ถึงรอบทบทวน':`ทบทวนอีก ${p.due-t} วัน`;};
+    const sp=this.subjPool();const selIds=s.sel?s.sel.filter(id=>sp.some(l=>l.id===id)):sp.map(l=>l.id);const selN=selIds.length;
+    const pool=this.pool();
+    const dueList=pool.filter(l=>P[l.id]&&P[l.id].due<=t);
+    const dset=new Set(s.days);let streak=0,d0=dset.has(t)?t:t-1;while(dset.has(d0)){streak++;d0--;}
+    const codes=CODES0.filter(c=>c[0]==='all'||L.some(l=>l.code===c[0])).map(([k,tt])=>{const on=s.code===k;return {t:tt,onClick:()=>this.setState({code:k}),bg:on?'var(--ink)':'var(--sf)',fg:on?'var(--bg)':'var(--ink)',bd:on?'var(--ink)':'var(--ln)'};});
+    const v0rows=s.subjects.map((x,xi)=>{const pl=PAL[xi%PAL.length];const pct=x.ids.length?Math.round(x.ids.reduce((a,id)=>a+lvOf(id),0)/(x.ids.length*5)*100)+'%':'0%';return {tile:pl.bg,icon:ico('book',pl.fg),name:x.name,meta:`${x.ids.length} มาตรา`,pct,onClick:()=>this.setState({screen:'subj',cur:x.id,subjBack:scr,sjEdit:false,sjMsg:''})};});
+    const v={
+      showHeader:['home','lib','stats'].includes(scr),showNav:['home','lib','stats','sec','subj','codelib','add'].includes(scr),
+      isHome:scr==='home',isLib:scr==='lib',isSec:scr==='sec',isStats:scr==='stats',isGame:scr==='game'&&!!g,isResult:scr==='result'&&!!s.res,
+      themeLabel:s.theme==='dark'?'สว่าง':'มืด',themeIcon:ico(s.theme==='dark'?'sun':'moon',s.theme==='dark'?'#9CCBF5':'#2F7FD0'),toggleTheme:()=>this.setState({theme:s.theme==='dark'?'light':'dark'}),
+      dueCount:dueList.length,streak,dueCta:dueList.length?`เริ่มทบทวน ${dueList.length} มาตรา`:'ไม่มีค้าง ฝึกมาตราที่ยังอ่อน',
+      startDue:()=>this.start('srs'),
+      last14:Array.from({length:14},(_,i)=>{const d=t-13+i;return {bg:dset.has(d)?'var(--ac)':(d===t?'var(--gh)':'var(--ln)')};}),
+      codes,poolLabel:selN?`ใช้ ${selN} มาตราที่เลือก`:'เลือกมาตราอย่างน้อย 1 มาตรา',
+      subjChips:[{id:'all',name:'ทุกมาตรา'},...s.subjects.filter(x=>(x.cat||'civ')===(s.cat||'civ'))].map(x=>{const on=s.subj===x.id;return {t:x.name,onClick:()=>this.setState({subj:x.id,sel:null}),bg:on?'var(--ink)':'var(--sf)',fg:on?'var(--bg)':'var(--ink)',bd:on?'var(--ink)':'var(--ln)'};}),
+      isSubj:false,isPick:false,isEdit:false,isImp:false,isCodeLib:scr==='codelib',catName:CATS[s.cat||'civ'][1],catCount:L.filter(l=>l.code===CATS[s.cat||'civ'][0]).length,goCodeLib:go('codelib'),secBack:()=>this.setState({screen:s.secBack||'lib'}),
+      newName:s.newName,onNewName:e=>this.setState({newName:e.target.value}),
+      addSubject:()=>this.addSubject(),onNewKey:e=>{if(e.key==='Enter')this.addSubject();},
+      noSubjects:!s.subjects.length,
+      subjRows:s.subjects.map((x,xi)=>{const pl=PAL[xi%PAL.length];const due=x.ids.filter(id=>P[id]&&P[id].due<=t).length;const pct=x.ids.length?Math.round(x.ids.reduce((a,id)=>a+lvOf(id),0)/(x.ids.length*5)*100):0;return {tile:pl.bg,icon:ico('book',pl.fg),name:x.name,meta:`${x.ids.length} มาตรา · ถึงรอบ ${due}`,pct:pct+'%',onClick:()=>this.setState({screen:'subj',cur:x.id,subjBack:scr,sjEdit:false,sjMsg:''})};}),
+      modes:MODES.map((m,i)=>({...m,tile:PAL[i%PAL.length].bg,icon:ico(m.id,PAL[i%PAL.length].fg),onClick:()=>this.setState({screen:'flow',flowMode:m.id})})),
+      homeTabs:[['subj','เริ่มจากวิชา'],['game','เริ่มจากเกม']].map(([k,tt])=>{const on=(s.homeTab||'subj')===k;return {t:tt,onClick:()=>this.setState({homeTab:k}),bg:on?'var(--ac)':'transparent',fg:on?'var(--onac)':'var(--mut)',fw:on?600:400};}),
+      tabSubj:(s.homeTab||'subj')==='subj',tabGame:s.homeTab==='game',
+      catBtns:[['civ','กฎหมายแพ่ง'],['cri','กฎหมายอาญา'],['cpc','กฎหมายวิแพ่ง'],['crpc','กฎหมายวิอาญา']].map(([k,tt])=>{const on=(s.cat||'civ')===k;const pc=PAL[{civ:0,cri:5,cpc:2,crpc:1}[k]];return {t:tt,onClick:()=>this.setState({cat:k,subj:'all',sel:null}),bg:on?pc.bg:'var(--sf)',fg:on?'#3A2F4A':'var(--ink)',bd:on?pc.fg:'var(--ln)',tile:on?'#fff':pc.bg,icon:ico(k,pc.fg),fw:on?700:500};}),
+      isFlow:scr==='flow',sjBack:()=>this.setState({screen:s.subjBack||'lib'}),
+      fl:(()=>{const m=MODES.find(x=>x.id===s.flowMode)||MODES[0];const noEl=m.id==='elem'&&selN&&!pool.some(l=>l.el);const ok=selN&&!noEl;const pm=PAL[MODES.indexOf(m)%PAL.length];return {tile:pm.bg,icon:ico(m.id,pm.fg),name:m.name,desc:m.desc,cta:noEl?'มาตราที่เลือกยังไม่มีข้อมูลองค์ประกอบ':ok?`เริ่มเล่น · ${selN} มาตรา`:'เลือกมาตราอย่างน้อย 1 มาตรา',bg:ok?'var(--ac)':'var(--ln)',fg:ok?'var(--onac)':'var(--mut)',start:()=>{if(ok)this.start(m.id);}};})(),
+      homeSecs:sp.map(l=>{const on=selIds.includes(l.id);return {label:lab(l),title:l.title,bd:on?'var(--ac)':'var(--ln)',bg:on?'var(--acs)':'var(--sf)',nfg:on?'var(--ac)':'var(--mut)',onClick:()=>this.setState({sel:on?selIds.filter(x=>x!==l.id):[...selIds,l.id]})};}),
+      hsHas:sp.length>0,hsEmpty:!sp.length,hsAllLabel:selN===sp.length?'ล้างที่เลือก':'เลือกทั้งหมด',hsAllIcon:ico(selN===sp.length?'clr':'all','#2F7FD0'),
+      hsToggleAll:()=>this.setState({sel:selN===sp.length?[]:null}),
+      hsPick:()=>this.setState({screen:'pick',cur:s.subj,code:'all'}),
+      navItems:[['home','หน้าแรก','home'],['lib','วิชา / ตัวบท','book'],['stats','สถิติ','stats']].map(([k,tt,ic])=>{const on=scr===k||(k==='lib'&&['sec','subj','pick','codelib','edit','imp','add'].includes(scr));return {t:tt,onClick:go(k),fg:on?'var(--ac)':'var(--mut)',fw:on?700:400,bar:on?'var(--acs)':'transparent',icon:ico(ic,on?'#2F7FD0':'#9AA3AE')};}),
+      libRows:pool.map(l=>({label:lab(l),title:l.title,due:dueTxt(l.id),dueColor:P[l.id]&&P[l.id].due<=t?'var(--ac)':'var(--mut)',dots:dots(lvOf(l.id)),onClick:()=>this.openSec(l.id)})),
+      goLib:go('lib'),goHome:go('home'),goAdd:()=>this.setState({screen:'lib',addMsg:'',addCat:s.cat||'civ'}),addBack:()=>{},isAdd:false,
+      libGroups:Object.entries(CATS).map(([k,[c,n]])=>{const rows=s.subjects.map((x,i)=>[x,i]).filter(([x])=>(x.cat||'civ')===k).map(([x,i])=>v0rows[i]);return {name:n,rows,empty:!rows.length};}),
+      codeRows:Object.entries(CATS).map(([k,[c,n]])=>({name:n,code:c,meta:`${L.filter(l=>l.code===c).length} มาตรา`,open:()=>this.setState({screen:'codelib',cat:k}),one:()=>this.openEdit(null,'lib',null,c),many:()=>this.setState({screen:'imp',im:{raw:'',code:c,target:null,back:'lib'}})})),
+      ad:(()=>{const chip=(on,t,fn)=>({t,onClick:fn,bg:on?'var(--ink)':'var(--sf)',fg:on?'var(--bg)':'var(--ink)',bd:on?'var(--ink)':'var(--ln)'});const ac=s.addCode||'ป.พ.พ.';const okN=!!(s.newName||'').trim();
+        return {msg:s.addMsg||'',icSubj:ico('book','#E0683A'),icProv:ico('cloze','#3C70D0'),sBg:okN?'var(--ac)':'var(--ln)',sFg:okN?'var(--onac)':'var(--mut)',
+          cats:Object.entries(CATS).map(([k,[c,n]])=>chip((s.addCat||'civ')===k,n,()=>this.setState({addCat:k}))),
+          codes:Object.values(CATS).map(([c,n])=>chip(ac===c,c,()=>this.setState({addCode:c,addTo:null}))),
+          subs:[chip(!s.addTo,'ไม่ใส่ (เก็บในคลังอย่างเดียว)',()=>this.setState({addTo:null})),...s.subjects.filter(x=>CATS[x.cat||'civ'][0]===ac).map(x=>chip(s.addTo===x.id,x.name,()=>this.setState({addTo:x.id})))],
+          one:()=>this.openEdit(null,'add',s.addTo,ac),many:()=>this.setState({screen:'imp',im:{raw:'',code:ac,target:s.addTo,back:'add'}})};})(),
+      again:()=>this.start(s.res.mode,s.res.sid),
+      liveStats:this.props.liveStats??true,
+      taRef:this.taRef,
+      resetAll:()=>{if(confirm('ล้างความคืบหน้าทั้งหมด?'))this.setState({prog:{},hist:[],days:[]});}
+    };
+    const catIdx=s.subjects.map((x,i)=>(x.cat||'civ')===(s.cat||'civ')?i:-1).filter(i=>i>=0);v.homeSubj=catIdx.map(i=>v.subjRows[i]);v.catEmpty=!catIdx.length;
+    const cur=s.subjects.find(x=>x.id===s.cur);
+    const row=l=>({label:lab(l),title:l.title,due:dueTxt(l.id),dueColor:P[l.id]&&P[l.id].due<=t?'var(--ac)':'var(--mut)',dots:dots(lvOf(l.id)),onClick:()=>this.openSec(l.id)});
+    const setIds=fn=>this.setState(st=>({subjects:st.subjects.map(x=>x.id===st.cur?{...x,ids:fn(x.ids)}:x)}));
+    if(scr==='subj'&&cur){v.isSubj=true;const ls=L.filter(l=>cur.ids.includes(l.id));const due=ls.filter(l=>P[l.id]&&P[l.id].due<=t).length;const empty=!ls.length;
+      const addNo=()=>{const th=x=>x.replace(/[๐-๙]/g,d=>d.charCodeAt(0)-0x0E50);const toks=th(s.sjQ||'').replace(/มาตรา|ม\./g,' ').split(/[,\s]+/).filter(Boolean);if(!toks.length)return;const want=[];toks.forEach(k=>{const r=k.match(/^(\d+)-(\d+)$/);if(r){for(let i=+r[1];i<=+r[2]&&i-r[1]<300;i++)want.push(String(i));}else want.push(k);});
+        const found=[],nf=[];want.forEach(n=>{const hit=L.filter(l=>l.no===n&&l.code===CATS[cur.cat||'civ'][0]);if(hit.length)found.push(...hit.map(l=>l.id));else nf.push(n);});const nw=found.filter(id=>!cur.ids.includes(id));
+        setIds(ids=>[...new Set([...ids,...found])]);this.setState({sjQ:'',sjMsg:(nw.length?`เพิ่ม ${nw.length} มาตรา`:(found.length?'มีมาตรานี้ในวิชาแล้ว':''))+(nf.length?`${nw.length||found.length?' · ':''}ยังไม่มีตัวบทในคลัง: ม.${nf.join(', ')} — เพิ่มได้ที่คลังมาตราหน้าแรก`:''),sjMsgC:nf.length&&!nw.length?'var(--er)':'var(--ac)'});};
+      v.sj={newProv:()=>this.openEdit(null,'subj',cur.id),imp:()=>this.setState({screen:'imp',im:{raw:'',code:'ป.พ.พ.',target:cur.id,back:'subj'}}),editing:!!s.sjEdit,editLabel:s.sjEdit?'เสร็จ':'ลบมาตรา',editBd:s.sjEdit?'var(--ac)':'var(--er)',editBg:s.sjEdit?'var(--ac)':'var(--ers)',editIcon:s.sjEdit?ico('done','#ffffff'):ico('clr','#D94A5A'),editFg:s.sjEdit?'var(--onac)':'var(--er)',toggleEdit:()=>this.setState({sjEdit:!s.sjEdit}),q:s.sjQ||'',msg:s.sjMsg||'',msgC:s.sjMsgC||'var(--mut)',onQ:e=>this.setState({sjQ:e.target.value}),onQKey:e=>{if(e.key==='Enter')addNo();},add:()=>addNo(),name:cur.name,meta:`${ls.length} มาตรา · ถึงรอบทบทวน ${due}`,empty,op:empty?0.4:1,rows:ls.map(l=>({...row(l),del:()=>setIds(ids=>ids.filter(x=>x!==l.id))})),
+        pick:()=>this.setState({screen:'pick',code:'all'}),
+        modes:MODES.filter(m=>m.id!=='elem'||ls.some(l=>l.el)).map(m=>({tile:PAL[MODES.indexOf(m)%PAL.length].bg,icon:ico(m.id,PAL[MODES.indexOf(m)%PAL.length].fg),name:m.name,onClick:()=>{if(empty){this.setState({screen:'pick',code:'all'});return;}this.setState({subj:cur.id,sel:null},()=>this.start(m.id));}})),
+        del:()=>{if(confirm(`ลบวิชา "${cur.name}" ใช่ไหม?\n\nมาตราในคลังและความจำของแต่ละมาตรายังอยู่ครบ`))this.setState(st=>({subjects:st.subjects.filter(x=>x.id!==cur.id),subj:st.subj===cur.id?'all':st.subj,screen:'lib'}));}};}
+    if(scr==='pick'&&cur){v.isPick=true;const pcode=CATS[cur.cat||'civ'][0];v.codes=[];const shown=L.filter(l=>l.code===pcode).sort(noCmp);const allOn=shown.every(l=>cur.ids.includes(l.id));
+      v.pk={name:cur.name,count:cur.ids.length,shown:`${shown.length} มาตรา`,allLabel:allOn?'เอาออกทั้งหมด':'เลือกทั้งหมด',
+        toggleAll:()=>setIds(ids=>allOn?ids.filter(id=>!shown.some(l=>l.id===id)):[...new Set([...ids,...shown.map(l=>l.id)])]),
+        rows:shown.map(l=>{const on=cur.ids.includes(l.id);return {label:lab(l),title:l.title,check:on?'✓':'',bg:on?'var(--ac)':'transparent',bd:on?'var(--ac)':'var(--gh)',onClick:()=>setIds(ids=>on?ids.filter(x=>x!==l.id):[...ids,l.id])};}),
+        done:()=>this.setState({screen:'subj'})};}
+    const inp=k=>e=>this.setState({ed:{...this.state.ed,[k]:e.target.value,err:''}});
+    const codeChips=(curC,fn)=>CODES0.filter(c=>c[0]!=='all').map(([k,tt])=>{const on=curC===k;return {t:tt,onClick:()=>fn(k),bg:on?'var(--ink)':'var(--sf)',fg:on?'var(--bg)':'var(--ink)',bd:on?'var(--ink)':'var(--ln)'};});
+    if(scr==='codelib'){const [cc,cn]=CATS[s.cat||'civ'];const ls=L.filter(l=>l.code===cc).sort(noCmp);
+      v.cl={code:cc,name:cn,meta:`${ls.length} มาตรา`,empty:!ls.length,add:()=>this.openEdit(null,'codelib',null,cc),imp:()=>this.setState({screen:'imp',im:{raw:'',code:cc,target:null,back:'codelib'}}),
+        rows:ls.map(l=>({label:lab(l),title:l.title,onClick:()=>this.openSec(l.id),edit:()=>this.openEdit(l,'codelib')}))};}
+    if(scr==='edit'&&s.ed){const e=s.ed;v.isEdit=true;const isBase=!!e.id&&BASE.some(b=>b.id===e.id);const isOv=isBase&&(s.custom||[]).some(c=>c.id===e.id);
+      v.ed={head:e.id?'แก้ไขมาตรา':'เพิ่มมาตราใหม่',no:e.no,title:e.title,text:e.text,keys:e.keys,err:e.err||'',onNo:inp('no'),onTitle:inp('title'),onText:inp('text'),onKeys:inp('keys'),
+        codes:codeChips(e.code,k=>this.setState({ed:{...this.state.ed,code:k}})),back:()=>this.setState({screen:e.back||'lib'}),
+        canDel:!!e.id&&(!isBase||isOv),delLabel:isBase?'คืนค่าตัวบทเดิม':'ลบมาตรานี้ออกจากคลัง',
+        del:()=>{if(!confirm(isBase?'คืนค่าตัวบทเดิม?':'ลบมาตรานี้ออกจากคลัง?'))return;this.setState(st=>({custom:(st.custom||[]).filter(c=>c.id!==e.id),subjects:isBase?st.subjects:st.subjects.map(x=>({...x,ids:x.ids.filter(i=>i!==e.id)})),screen:!isBase&&e.back==='sec'?(st.secBack||'lib'):(e.back||'lib')}));},
+        save:()=>this.saveEdit()};}
+    if(scr==='imp'&&s.im){const im=s.im;v.isImp=true;const items=parseImport(im.raw,im.code);const tgt=s.subjects.find(x=>x.id===im.target);
+      v.im={target:tgt?tgt.name:'คลังมาตรา'+((Object.values(CATS).find(c=>c[0]===im.code)||['',''])[1]),raw:im.raw,fname:im.fname||'',onRaw:e=>this.setState({im:{...this.state.im,raw:e.target.value}}),
+        onFile:e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>this.setState({im:{...this.state.im,raw:String(rd.result),fname:f.name}});rd.readAsText(f);e.target.value='';},
+        codes:codeChips(im.code,k=>this.setState({im:{...this.state.im,code:k}})),
+        summary:items.length?`พบ ${items.length} มาตรา`:(im.raw?'ยังหามาตราไม่เจอ ให้ขึ้นต้นแต่ละมาตราด้วย “มาตรา” ตามด้วยเลข':''),
+        rows:items.map(x=>{const ex=L.find(l=>l.code===x.code&&l.no===x.no);return {label:`${x.code} ${x.no}`,title:x.title||(ex?ex.title:x.paras[0].slice(0,60)),flag:ex?'แทนที่ตัวบทเดิม':'ใหม่',flagC:ex?'var(--er)':'var(--ac)'};}),
+        cta:items.length?`นำเข้า ${items.length} มาตรา`:'ยังไม่มีมาตราให้นำเข้า',bg:items.length?'var(--ac)':'var(--ln)',fg:items.length?'var(--onac)':'var(--mut)',
+        back:()=>this.setState({screen:im.back||'lib'}),
+        go:()=>{if(!items.length)return;const pv=items.map(x=>mkProv(x));const ids=pv.map(p=>p.id);this.setState(st=>({custom:[...(st.custom||[]).filter(c=>!ids.includes(c.id)),...pv],subjects:im.target?st.subjects.map(x=>x.id===im.target?{...x,ids:[...new Set([...x.ids,...ids])]}:x):st.subjects,screen:im.back||'lib',sjMsg:`นำเข้า ${pv.length} มาตราแล้ว`,sjMsgC:'var(--ac)'}));}};}
+    if(scr==='sec'&&s.sid){const l=byId(s.sid);v.secEdit=()=>this.openEdit(l,'sec');v.sec={...l,units:units(l)};
+      {const cs=s.subjects.find(x=>x.id===s.cur);const list=s.secBack==='subj'&&cs?L.filter(x=>cs.ids.includes(x.id)):s.secBack==='codelib'?L.filter(x=>x.code===l.code):L;const i=list.findIndex(x=>x.id===l.id);const nx=list[i+1],pv=list[i-1];
+        v.secNav={label:nx?`ถัดไป · ม.${nx.no}`:'มาตราสุดท้ายแล้ว',nBg:nx?'var(--ac)':'var(--ln)',nFg:nx?'var(--onac)':'var(--mut)',pOp:pv?1:0.4,next:()=>{if(nx){this.setState({sid:nx.id});window.scrollTo(0,0);}},prev:()=>{if(pv){this.setState({sid:pv.id});window.scrollTo(0,0);}}};}v.secDots=dots(lvOf(l.id));v.secDue=dueTxt(l.id);
+      v.secModes=MODES.filter(m=>m.id!=='match'&&m.id!=='guess'&&(m.id!=='elem'||l.el)&&(m.id!=='order'||ochunks(l).length>=4)).map(m=>({name:m.name,onClick:()=>this.start(m.id,l.id)}));}
+    if(scr==='stats'){const typ=s.hist.filter(h=>h.wpm);
+      v.kpis=[{k:'วันติดต่อกัน',v:streak},{k:'WPM สูงสุด',v:typ.length?Math.max(...typ.map(h=>h.wpm)):'–'},{k:'แม่นยำเฉลี่ย',v:typ.length?Math.round(typ.reduce((a,h)=>a+h.acc,0)/typ.length)+'%':'–'}];
+      const shades=['var(--ln)','oklch(0.85 0.04 262)','oklch(0.72 0.07 262)','oklch(0.58 0.09 262)','oklch(0.46 0.1 262)','var(--ac)'];
+      const names=['ยังไม่เริ่ม','ระดับ 1','ระดับ 2','ระดับ 3','ระดับ 4','จำแม่น'];
+      const cnt=[0,0,0,0,0,0];L.forEach(l=>{const p=P[l.id];if(!p)cnt[0]++;else cnt[clamp(p.lv,0,5)]++;});
+      v.dist=cnt.map((n,i)=>({n,bg:shades[i],label:names[i]})).filter(x=>x.n>0);v.totalSecs=L.length;
+      v.byCode=s.subjects.map(x=>({t:x.name,pct:(x.ids.length?Math.round(x.ids.reduce((a,id)=>a+lvOf(id),0)/(x.ids.length*5)*100):0)+'%'}));
+      const seen=(s.seen||[]).map(byId).filter(Boolean).slice(0,8);v.seenEmpty=!seen.length;v.seen=seen.map(l=>({label:lab(l),title:l.title,n:P[l.id]?P[l.id].n:0,onClick:()=>this.openSec(l.id)}));
+      v.recent=typ.slice(-5).reverse().map(h=>({when:h.t===t?'วันนี้':`${t-h.t} วันก่อน`,mode:MODE_NAME[h.mode],wpm:h.wpm,acc:h.acc+'%'}));}
+    if(scr==='result'&&s.res){const r=s.res;
+      {const one=['type','recall','cloze','order','elem'].includes(r.mode)&&r.secId;const pl=this.pool().filter(l=>r.mode!=='elem'||l.el);const i=pl.findIndex(l=>l.id===r.secId);const nx=one&&pl.length>1?pl[(i+1)%pl.length]:null;
+        v.resNext={has:!!nx,label:nx?`มาตราถัดไป · ม.${nx.no}`:'',go:()=>{if(!nx)return;this.setState({screen:r.back||'home'},()=>this.start(r.mode,nx.id));}};
+        v.againLabel=one?'เล่นมาตราเดิม':'เล่นต่อ';v.again=one?()=>this.setState({screen:r.back||'home'},()=>this.start(r.mode,r.secId)):v.again;}
+      v.res={head:r.head,big:r.big,bigLabel:r.bigLabel,rows:(r.rows||[]).map(([k,x])=>({k,v:x})),
+      lines:r.lines.map(x=>({label:lab(byId(x.id)),dots:dots(x.to),txt:x.to>x.from?`ขึ้น ${x.from} → ${x.to}`:x.to<x.from?`ลง ${x.from} → ${x.to}`:`คงที่ ${x.to}`,color:x.to>x.from?'var(--ac)':x.to<x.from?'var(--er)':'var(--mut)'}))};}
+    if(v.isGame){const m=g.mode;v.modeName=MODE_NAME[m];v.quitGame=()=>this.setState({screen:g.back,g:null});
+      v.gameSub=g.sec?lab(g.sec):'';v.gameRight='';
+      ['isTyping','isRecallW','isCloze','isOrder','isMatch','isSrs','isGuess','isElem'].forEach(k=>v[k]=false);
+      if(m==='recall'){v.isRecallW=true;const T=g.sec.text;const up=p=>this.setState(st=>({g:{...st.g,...p}}));
+        let segs=[],acc=0;if(g.sub){const r=rdiff(g.ans,T);acc=r.acc;segs=r.segs.map(([k,t])=>k==='eq'?{t,c:'var(--ink)',bg:'transparent',td:'none'}:k==='add'?{t,c:'var(--er)',bg:'var(--ers)',td:'none'}:{t,c:'var(--mut)',bg:'transparent',td:'underline dashed'});}
+        v.rc={label:`${g.sec.code} มาตรา ${g.sec.no}`,title:g.sec.title,ans:g.ans,editing:!g.sub,sub:g.sub,full:T,units:units(g.sec),segs,acc:acc+'%',scoreC:acc>=90?'var(--ac)':acc>=70?'var(--ink)':'var(--er)',
+          peeking:!!s.peek&&!g.sub,peekLabel:s.peek?'ซ่อนตัวบท':'แอบดูตัวบท',peek:()=>{if(!s.peek)up({peeked:true});this.setState({peek:!s.peek});},
+          onAns:e=>up({ans:e.target.value}),subBg:g.ans.trim()?'var(--ac)':'var(--ln)',subFg:g.ans.trim()?'var(--onac)':'var(--mut)',
+          submit:()=>{if(!g.ans.trim())return;this.setState({peek:false});up({sub:true,tries:g.tries+1});},retry:()=>up({sub:false}),
+          done:()=>{const a=rdiff(g.ans,T).acc;let d=a>=95?2:a>=85?1:a<60?-1:0;if(g.peeked||g.tries>1)d=Math.min(d,a>=85?1:0);if(g.peeked)d=Math.min(d,0);
+            this.finish({mode:'recall',sid:g.fromSid,head:'พิมพ์จากความจำ',big:a+'%',bigLabel:'ตรงกับตัวบท',acc:a,rows:[['เวลา',fmt((Date.now()-g.start)/1000)],['ส่ง',g.tries+' ครั้ง'],['แอบดู',g.peeked?'ใช่':'ไม่']],changes:[[g.sec.id,d]]});}};}
+      if(m==='type'){v.isTyping=true;const T=g.sec.text,tv=g.typed,B=g.B;let c=0;while(c<tv.length&&tv[c]===T[c])c++;
+        let cs=c;while(cs>0&&!B.has(cs))cs--;let we=Math.max(tv.length,cs);while(we<T.length&&!B.has(we))we++;
+        const err=tv.length>c;const hid=m==='recall';
+        const el=g.start?((g.end||Date.now())-g.start)/60000:0;
+        v.ty={label:`${g.sec.code} มาตรา ${g.sec.no}`,title:g.sec.title,typed:tv,correct:T.slice(0,cs),mid:T.slice(cs,we),midColor:err?'var(--er)':'var(--ink)',midBg:err?'var(--ers)':'transparent',
+          rest:hid?(g.hintEnd>we?T.slice(we,g.hintEnd):''):T.slice(we),wpm:el>0.02?Math.round(c/5/el):0,acc:g.keys?Math.round((g.keys-g.errors)/g.keys*100)+'%':'100%',pct:Math.round(c/T.length*100)+'%',
+          showTap:!s.tf&&!tv.length,isRecall:hid,full:T};
+        v.gameSub='';v.gameRight=hid?`${g.hints} ใบ้`:'';
+        const block=(this.props.caret??'line')==='block';
+        v.caret=React.createElement('span',{key:'c',style:{display:'inline-block',width:block?'0.5em':'2px',height:'1.2em',verticalAlign:'-0.22em',background:'var(--ac)',opacity:block?0.35:1,marginRight:block?0:-2,animation:s.tf?'blink 1s steps(1) infinite':'none',visibility:s.tf||!tv.length?'visible':'hidden'}});
+        v.onType=this.onType;v.onTF=()=>this.setState({tf:true});v.onTB=()=>this.setState({tf:false});v.onTypeKey=e=>{if(e.key==='Enter')e.preventDefault();};
+        v.hint=()=>{let e2=Math.min(T.length,we+10);const sp=T.indexOf(' ',we+1);if(sp>0&&sp<e2)e2=sp+1;while(e2<T.length&&!B.has(e2))e2++;this.setState({g:{...g,hintEnd:e2,hints:g.hints+1}});this.focusTyper();};
+        v.peeking=s.peek;v.peekLabel=s.peek?'ซ่อนเฉลย':'ดูเฉลยทั้งมาตรา';v.peek=()=>{this.setState({peek:!s.peek,g:s.peek?g:{...g,hints:g.hints+3}});this.focusTyper();};}
+      if(m==='cloze'){v.isCloze=true;const allFilled=g.fills.every(f=>f!==null);
+        v.cz={label:lab(g.sec),title:g.sec.title,segs:g.segs.map(sg=>{if(sg.t!=null)return {isText:true,isBlank:false,t:sg.t};const j=sg.blank,f=g.fills[j],w=f!==null?g.bank[f]:null,ok=w===g.answers[j];
+          const act=!g.checked&&j===g.active;return {isText:false,isBlank:true,w:Math.max(3,g.answers[j].length*0.7)+'em',label:g.checked&&!ok?`${w||'—'} → ${g.answers[j]}`:(w||'\u00a0'),
+          bs:w?'solid':'dashed',bc:g.checked?(ok?'var(--ac)':'var(--er)'):(act?'var(--ac)':'var(--gh)'),bg:g.checked?(ok?'var(--acs)':'var(--ers)'):(w?'var(--sf)':'transparent'),fg:g.checked&&!ok?'var(--er)':'var(--ink)',
+          onClick:()=>{if(g.checked)return;const fills=[...g.fills];fills[j]=null;this.setState({g:{...g,fills,active:j}});}};}),
+          bank:g.bank.map((w,i)=>{const used=g.fills.includes(i);return {w,op:used?0.3:1,onClick:()=>{if(used||g.checked)return;const fills=[...g.fills];let a=fills[g.active]===null?g.active:fills.indexOf(null);if(a<0)return;fills[a]=i;const nx=fills.indexOf(null);this.setState({g:{...g,fills,active:nx<0?a:nx}});}};}),
+          btn:g.checked?'ไปต่อ':'ตรวจคำตอบ',btnBg:allFilled||g.checked?'var(--ac)':'var(--ln)',btnFg:allFilled||g.checked?'var(--onac)':'var(--mut)',
+          action:()=>{if(!g.checked){if(allFilled)this.setState({g:{...g,checked:true}});return;}const c=g.answers.filter((a,j)=>g.bank[g.fills[j]]===a).length,n=g.answers.length;
+            this.finish({mode:'cloze',sid:g.fromSid,head:'เติมคำครบแล้ว',big:`${c}/${n}`,bigLabel:'คำถูก',rows:[['มาตรา',lab(g.sec)]],changes:[[g.sec.id,c===n?1:c/n<0.5?-1:0]],xp:c*8});}};
+        v.gameSub=lab(g.sec);v.gameRight=`${g.fills.filter(f=>f!==null).length}/${g.answers.length}`;}
+      if(m==='order'){v.isOrder=true;const full=g.ans.length===g.ch.length;
+        v.od={label:lab(g.sec),title:g.sec.title,empty:!g.ans.length,ans:g.ans.map((a,k)=>{const ok=a.t===g.ch[k];return {n:k+1,t:a.t,tag:(g.tg||[])[a.i]||'',bd:g.checked?(ok?'var(--ac)':'var(--er)'):'var(--ln)',bg:g.checked?(ok?'var(--acs)':'var(--ers)'):'var(--sf)',onClick:()=>{if(g.checked)return;this.setState({g:{...g,ans:g.ans.filter((_,x)=>x!==k)}});}};}),
+          pool:g.pool.filter(p=>!g.ans.includes(p)).map(p=>({t:p.t,tag:(g.tg||[])[p.i]||'',onClick:()=>{if(!g.checked)this.setState({g:{...g,ans:[...g.ans,p]}});}})),
+          btn:g.checked?'ไปต่อ':'ตรวจลำดับ',btnBg:full||g.checked?'var(--ac)':'var(--ln)',btnFg:full||g.checked?'var(--onac)':'var(--mut)',
+          action:()=>{if(!g.checked){if(full)this.setState({g:{...g,checked:true}});return;}const c=g.ans.filter((a,k)=>a.t===g.ch[k]).length,n=g.ch.length;
+            this.finish({mode:'order',sid:g.fromSid,head:'เรียงวลีเสร็จแล้ว',big:`${c}/${n}`,bigLabel:'ท่อนถูกตำแหน่ง',rows:[['มาตรา',lab(g.sec)]],changes:[[g.sec.id,c===n?1:c/n<0.5?-1:0]],xp:c*6});}};
+        v.gameRight=`${g.ans.length}/${g.ch.length}`;}
+      if(m==='match'){v.isMatch=true;const el=(Date.now()-g.start)/1000;v.gameSub=`พลาด ${g.miss}`;v.gameRight=fmt(el);
+        const tap=(side,id)=>{const G=this.state.g;if(G.done.includes(id))return;let selL=G.selL,selR=G.selR;if(side==='l')selL=id;else selR=id;
+          if(selL&&selR){if(selL===selR){const done=[...G.done,selL];this.setState({g:{...G,done,selL:null,selR:null,wrong:null}});
+              if(done.length===G.left.length)setTimeout(()=>{const F=this.state.g,secs=(Date.now()-F.start)/1000;this.finish({mode:'match',sid:null,head:'จับคู่ครบ 5 คู่',big:fmt(secs),bigLabel:'นาที',rows:[['จับคู่ผิด',F.miss+' ครั้ง']],changes:F.left.map(i=>[i,F.miss===0?1:0]),xp:Math.max(10,60-F.miss*10)});},450);}
+            else{this.setState({g:{...G,selL:null,selR:null,wrong:[selL,selR],miss:G.miss+1}});clearTimeout(this._wt);this._wt=setTimeout(()=>this.setState(st=>({g:st.g&&{...st.g,wrong:null}})),650);}}
+          else this.setState({g:{...G,selL,selR,wrong:null}});};
+        const sty=(id,sel,wr)=>{const dn=g.done.includes(id);return {bd:wr?'var(--er)':sel?'var(--ac)':dn?'var(--ac)':'var(--ln)',bg:wr?'var(--ers)':sel?'var(--acs)':dn?'var(--acs)':'var(--sf)',fg:'var(--ink)',op:dn?0.35:1};};
+        v.mt={left:g.left.map(id=>({t:lab(byId(id)),...sty(id,g.selL===id,g.wrong&&g.wrong[0]===id),onClick:()=>tap('l',id)})),right:g.right.map(id=>({t:byId(id).title,...sty(id,g.selR===id,g.wrong&&g.wrong[1]===id),onClick:()=>tap('r',id)}))};}
+      if(m==='srs'){v.isSrs=true;const l=byId(g.q[Math.min(g.i,g.q.length-1)]);const lv=lvOf(l.id);v.gameSub=`${Math.min(g.i+1,g.q.length)}/${g.q.length}`;
+        const ivs={again:'วันนี้',hard:`${Math.max(1,Math.ceil(IV[lv]/2))} วัน`,good:`${IV[clamp(lv+1,0,5)]} วัน`,easy:`${IV[clamp(lv+2,0,5)]} วัน`};
+        v.sr={units:units(l),label:`${l.code} มาตรา ${l.no}`,title:l.title,text:l.text,flipped:g.flipped,front:!g.flipped,
+          rates:[['again','ลืม'],['hard','ยาก'],['good','จำได้'],['easy','ง่าย']].map(([k,tt])=>({t:tt,iv:ivs[k],bg:k==='good'?'var(--ac)':'var(--sf)',fg:k==='good'?'var(--onac)':k==='again'?'var(--er)':'var(--ink)',onClick:()=>this.rate(k)}))};
+        v.flip=()=>{if(!g.flipped)this.setState({g:{...g,flipped:true}});};}
+      if(m==='guess'){v.isGuess=true;const rd=g.rounds[g.i];const ans=byId(rd.id);v.gameSub=`ข้อ ${g.i+1}/${g.rounds.length}`;v.gameRight=`${g.score} ถูก`;
+        v.gs={units:units(ans),text:ans.text,picked:!!rd.picked,note:rd.picked?(rd.picked===rd.id?`ถูกต้อง · ${ans.title}`:`คำตอบคือ ${lab(ans)} · ${ans.title}`):'',
+          nextLabel:g.i+1<g.rounds.length?'ข้อถัดไป':'ดูผล',
+          opts:rd.opts.map(id=>{const isA=id===rd.id,isP=id===rd.picked;return {t:lab(byId(id)),bd:rd.picked?(isA?'var(--ac)':isP?'var(--er)':'var(--ln)'):'var(--ln)',bg:rd.picked?(isA?'var(--acs)':isP?'var(--ers)':'var(--sf)'):'var(--sf)',fg:'var(--ink)',
+            onClick:()=>{if(rd.picked)return;const rounds=g.rounds.map((x,k)=>k===g.i?{...x,picked:id}:x);this.setState({g:{...g,rounds,score:g.score+(isA?1:0)}});}};}),
+          next:()=>{if(g.i+1<g.rounds.length){this.setState({g:{...g,i:g.i+1}});return;}this.finish({mode:'guess',sid:null,head:'ทายเลขมาตราครบ 5 ข้อ',big:`${g.score}/${g.rounds.length}`,bigLabel:'ข้อถูก',rows:[],changes:g.rounds.map(x=>[x.id,x.picked===x.id?1:-1]),xp:g.score*10});}};}
+      if(m==='elem'){v.isElem=true;const allF=g.fills.every(f=>f!==null);
+        v.el={label:lab(g.sec),title:g.sec.title,
+          slots:g.sec.el.map(([k,a],j)=>{const f=g.fills[j],w=f!==null?g.chips[f]:null,ok=w===a,act=!g.checked&&j===g.active;
+            return {k,v:g.checked&&!ok?`${a}`:(w||'แตะเพื่อเลือก'),fg:w||g.checked?(g.checked&&!ok?'var(--er)':'var(--ink)'):'var(--gh)',bd:g.checked?(ok?'var(--ac)':'var(--er)'):act?'var(--ac)':'var(--ln)',bg:g.checked?(ok?'var(--acs)':'var(--ers)'):'var(--sf)',
+              onClick:()=>{if(g.checked)return;const fills=[...g.fills];fills[j]=null;this.setState({g:{...g,fills,active:j}});}};}),
+          chips:g.chips.map((c,i)=>{const used=g.fills.includes(i);return {t:c,op:used?0.3:1,onClick:()=>{if(used||g.checked)return;const fills=[...g.fills];let a=fills[g.active]===null?g.active:fills.indexOf(null);if(a<0)return;fills[a]=i;const nx=fills.indexOf(null);this.setState({g:{...g,fills,active:nx<0?a:nx}});}};}),
+          btn:g.checked?'ไปต่อ':'ตรวจองค์ประกอบ',btnBg:allF||g.checked?'var(--ac)':'var(--ln)',btnFg:allF||g.checked?'var(--onac)':'var(--mut)',
+          action:()=>{if(!g.checked){if(allF)this.setState({g:{...g,checked:true}});return;}const n=g.sec.el.length,c=g.sec.el.filter(([k,a],j)=>g.chips[g.fills[j]]===a).length;
+            this.finish({mode:'elem',sid:g.fromSid,head:'แยกองค์ประกอบเสร็จแล้ว',big:`${c}/${n}`,bigLabel:'ช่องถูก',rows:[['มาตรา',lab(g.sec)]],changes:[[g.sec.id,c===n?1:c/n<0.5?-1:0]],xp:c*8});}};
+        v.gameRight=`${g.fills.filter(f=>f!==null).length}/${g.sec.el.length}`;}
+    }
+    return v;
+  }
+}
+</script>
+</body>
+</html>
